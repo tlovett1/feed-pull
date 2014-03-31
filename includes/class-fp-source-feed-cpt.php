@@ -1,12 +1,18 @@
 <?php
 
+/**
+ * Class FP_Source_Feed_CPT registers our custom post type and sets up meta boxes
+ * for it.
+ */
 
 class FP_Source_Feed_CPT {
 
     private static $_instance;
 
-
-    public function __construct() {
+	/**
+	 * Setup actions and filters
+	 */
+	public function __construct() {
         add_action( 'init', array( $this, 'setup_cpt' ) );
 		add_filter( 'post_updated_messages', array( $this, 'filter_post_updated_messages' ) );
 		add_action( 'admin_enqueue_scripts' , array( $this, 'action_admin_enqueue_scripts_css' ) );
@@ -14,6 +20,9 @@ class FP_Source_Feed_CPT {
 		add_action( 'save_post', array( $this, 'action_save_post' ) );
     }
 
+	/**
+	 * Enqueue post new/edit screen scripts/styles
+	 */
 	public function action_admin_enqueue_scripts_css() {
 		global $pagenow;
 
@@ -63,6 +72,9 @@ class FP_Source_Feed_CPT {
 		return $messages;
 	}
 
+	/**
+	 * Register source feed post type
+	 */
 	public function setup_cpt() {
 
 		$labels = array(
@@ -105,6 +117,7 @@ class FP_Source_Feed_CPT {
 		add_meta_box( 'fp_source_details', __( 'Source Feed Details', 'feed-pull' ), array( $this, 'meta_box_source_details' ), 'fp_feed', 'normal', 'core' );
 		add_meta_box( 'fp_content_details', __( 'New Content Details', 'feed-pull' ), array( $this, 'meta_box_content_details' ), 'fp_feed', 'normal', 'core' );
 		add_meta_box( 'fp_field_mapping', __( 'Field Mapping', 'feed-pull' ), array( $this, 'meta_box_field_mapping' ), 'fp_feed', 'normal', 'core' );
+		add_meta_box( 'fp_log', __( 'Pull Log', 'feed-pull' ), array( $this, 'meta_box_log' ), 'fp_feed', 'normal', 'core' );
 	}
 
 	/**
@@ -122,6 +135,11 @@ class FP_Source_Feed_CPT {
 		return __( 'Enter source feed name', 'feed-pull' );
 	}
 
+	/**
+	 * Output source options meta box
+	 *
+	 * @param $post
+	 */
 	public function meta_box_source_details( $post ) {
 		wp_nonce_field( 'fp_source_details_action', 'fp_source_details' );
 
@@ -156,7 +174,7 @@ class FP_Source_Feed_CPT {
 		$current_post_type = get_post_meta( $post->ID, 'fp_post_type', true );
 		$current_post_status = get_post_meta( $post->ID, 'fp_post_status', true );
 
-		$post_types = get_post_types( array( 'public' => true, '_builtin' => false ), 'names' );
+		$post_types = get_post_types( array( 'public' => true ), 'names' );
 		$post_statii = get_post_statuses();
 		?>
 		<p>Configure the content we pull from the feeds.</p>
@@ -179,6 +197,34 @@ class FP_Source_Feed_CPT {
 	<?php
 	}
 
+	/**
+	 * Output source feed pull og
+	 *
+	 * @param $post
+	 */
+	public function meta_box_log( $post ) {
+
+		$log = get_post_meta( $post->ID, 'fp_last_pull_log', true );
+	?>
+
+		<?php if ( empty( $log ) ) : ?>
+			<p><?php _e( 'No pulls for this source feed yet.', 'feed-pull' ); ?></p>
+		<?php else : ?>
+			<ul>
+			<?php foreach ( $log as $log_item ) : ?>
+				<li><span class="<?php echo esc_attr( $log_item['status'] ); ?>"><?php echo esc_html( $log_item['status'] ); ?></span>: <?php echo esc_html( $log_item['message'] ); ?></li>
+			<?php endforeach; ?>
+			</ul>
+
+		<?php endif; ?>
+	<?php
+	}
+
+	/**
+	 * Output field mapping meta box
+	 *
+	 * @param $post
+	 */
 	public function meta_box_field_mapping( $post ) {
 		wp_nonce_field( 'fp_field_mapping_action', 'fp_field_mapping' );
 
