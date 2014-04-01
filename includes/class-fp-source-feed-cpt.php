@@ -44,6 +44,20 @@ class FP_Source_Feed_CPT {
 	}
 
 	/**
+	 * This method exists so required source feed fields are filterable
+	 *
+	 * @return mixed|void
+	 */
+	public static function get_required_fields() {
+		$required_fields = array(
+			'post_title',
+			'guid',
+		);
+
+		return apply_filters( 'fp_required_source_feed_fields', $required_fields );
+	}
+
+	/**
 	 * Filter CPT messages
 	 *
 	 * @param array $messages
@@ -55,18 +69,18 @@ class FP_Source_Feed_CPT {
 		global $post, $post_ID;
 
 		$messages['fp_feed'] = array(
-			0 => '', // Unused. Messages start at index 1.
-			1 => sprintf( __( 'Content feed updated. <a href="%s">View content feed</a>', 'feed-pull' ), esc_url( get_permalink( $post_ID ) ) ),
+			0 => '',
+			1 => sprintf( __( 'Source feed updated. <a href="%s">View source feed</a>', 'feed-pull' ), esc_url( get_permalink( $post_ID ) ) ),
 			2 => __( 'Custom field updated.', 'feed-pull' ),
 			3 => __( 'Custom field deleted.', 'feed-pull' ),
-			4 => __( 'Content feed updated.', 'feed-pull' ),
+			4 => __( 'Source feed updated.', 'feed-pull' ),
 			5 => isset( $_GET['revision']) ? sprintf( __(' Content feed restored to revision from %s', 'feed-pull' ), wp_post_revision_title( (int) $_GET['revision'], false ) ) : false,
-			6 => sprintf( __( 'Content feed published. <a href="%s">View content feed</a>', 'feed-pull' ), esc_url( get_permalink( $post_ID) ) ),
-			7 => __( 'Content feed saved.', 'feed-pull' ),
-			8 => sprintf( __( 'Content feed submitted. <a target="_blank" href="%s">Preview review</a>', 'feed-pull' ), esc_url( add_query_arg( 'preview', 'true', get_permalink( $post_ID ) ) ) ),
-			9 => sprintf( __( 'Content feed scheduled for: <strong>%1$s</strong>. <a target="_blank" href="%2$s">Preview content feed</a>', 'feed-pull' ),
+			6 => sprintf( __( 'Source feed published. <a href="%s">View source feed</a>', 'feed-pull' ), esc_url( get_permalink( $post_ID) ) ),
+			7 => __( 'Source feed saved.', 'feed-pull' ),
+			8 => sprintf( __( 'Source feed submitted. <a target="_blank" href="%s">Preview source feed</a>', 'feed-pull' ), esc_url( add_query_arg( 'preview', 'true', get_permalink( $post_ID ) ) ) ),
+			9 => sprintf( __( 'Source feed scheduled for: <strong>%1$s</strong>. <a target="_blank" href="%2$s">Preview source feed</a>', 'feed-pull' ),
 				date_i18n( __( 'M j, Y @ G:i' ), strtotime( $post->post_date ) ), esc_url( get_permalink( $post_ID ) ) ),
-			10 => sprintf( __( 'Content feed draft updated. <a target="_blank" href="%s">Preview content feed</a>', 'feed-pull'), esc_url( add_query_arg( 'preview', 'true', get_permalink( $post_ID ) ) ) ),
+			10 => sprintf( __( 'Source feed draft updated. <a target="_blank" href="%s">Preview source feed</a>', 'feed-pull'), esc_url( add_query_arg( 'preview', 'true', get_permalink( $post_ID ) ) ) ),
 		);
 
 		return $messages;
@@ -168,16 +182,22 @@ class FP_Source_Feed_CPT {
 	<?php
 	}
 
+	/**
+	 * Output new post options meta box
+	 *
+	 * @param $post
+	 */
 	public function meta_box_content_details( $post ) {
 		wp_nonce_field( 'fp_new_content_details_action', 'fp_new_content_details' );
 
 		$current_post_type = get_post_meta( $post->ID, 'fp_post_type', true );
 		$current_post_status = get_post_meta( $post->ID, 'fp_post_status', true );
+		$allow_updates = get_post_meta( $post->ID, 'fp_allow_updates', true );
 
 		$post_types = get_post_types( array( 'public' => true ), 'names' );
 		$post_statii = get_post_statuses();
 		?>
-		<p>Configure the content we pull from the feeds.</p>
+		<p><?php _e( 'Configure the content we pull from the feeds.', 'feed-pull' ); ?></p>
 		<p>
 			<label for="fp_post_type"><?php _e( 'Post Type:', 'feed-pull' ); ?></label>
 			<select type="text" id="fp_post_type" name="fp_post_type">
@@ -194,11 +214,18 @@ class FP_Source_Feed_CPT {
 				<?php endforeach; ?>
 			</select>
 		</p>
+		<p>
+			<label for="fp_allow_updates"><?php _e( 'Update Existing Posts:', 'feed-pull' ); ?></label>
+			<select type="text" id="fp_allow_updates" name="fp_allow_updates">
+				<option value="0"><?php _e( 'No', 'feed-pull' ); ?></option>
+				<option <?php selected( $allow_updates, 1 ); ?> value="1"><?php _e( 'Yes', 'feed-pull' ); ?></option>
+			</select>
+		</p>
 	<?php
 	}
 
 	/**
-	 * Output source feed pull og
+	 * Output source feed pull log
 	 *
 	 * @param $post
 	 */
@@ -212,7 +239,7 @@ class FP_Source_Feed_CPT {
 		<?php else : ?>
 			<ul>
 			<?php foreach ( $log as $log_item ) : ?>
-				<li><span class="<?php echo esc_attr( $log_item['status'] ); ?>"><?php echo esc_html( $log_item['status'] ); ?></span>: <?php echo esc_html( $log_item['message'] ); ?></li>
+				<li><span class="<?php echo esc_attr( $log_item['type'] ); ?>"><?php echo ucwords( esc_html( $log_item['type'] ) ); ?></span>: <?php echo esc_html( $log_item['message'] ); ?></li>
 			<?php endforeach; ?>
 			</ul>
 
@@ -242,26 +269,28 @@ class FP_Source_Feed_CPT {
 				</tr>
 			</thead>
 			<tbody>
-				<tr class="req" data-mapping-row-id="0">
-					<td>
-						<input type="text" name="fp_field_map[0][source_field]" value="<?php if ( ! empty( $field_map[0]['source_field'] ) ) echo esc_attr( $field_map[0]['source_field'] ); ?>">
-					</td>
-					<td>
-						<input disabled="true" type="text" value="post_title">
-						<input type="hidden" name="fp_field_map[0][destination_field]" value="post_title">
-					</td>
-					<td>
-						<select disabled="true">
-							<option value="post_field"><?php _e( 'Post Field', 'feed-pull' ); ?></option>
-							<option value="post_meta"><?php _e( 'Post Meta', 'feed-pull' ); ?></option>
-						</select>
-						<input type="hidden" name="fp_field_map[0][mapping_type]" value="post_field">
-					</td>
-					<td class="action">
-						<input style="visibility: hidden" type="button" value="<?php _e( 'Delete', 'feed-pull' ); ?>" class="delete">
-					</td>
-				</tr>
-			<?php if ( isset( $field_map[0] ) ) unset( $field_map[0] ); foreach ( $field_map as $row_id => $field ) : ?>
+				<?php foreach ( self::get_required_fields() as $i => $field ) : ?>
+					<tr class="req" data-mapping-row-id="<?php echo (int) $i; ?>">
+						<td>
+							<input type="text" name="fp_field_map[<?php echo (int) $i; ?>][source_field]" value="<?php if ( ! empty( $field_map[$i]['source_field'] ) ) echo esc_attr( $field_map[$i]['source_field'] ); ?>">
+						</td>
+						<td>
+							<input disabled="true" type="text" value="<?php echo esc_attr( $field ); ?>">
+							<input type="hidden" name="fp_field_map[<?php echo (int) $i; ?>][destination_field]" value="<?php echo esc_attr( $field ); ?>">
+						</td>
+						<td>
+							<select disabled="true">
+								<option value="post_field"><?php _e( 'Post Field', 'feed-pull' ); ?></option>
+								<option value="post_meta"><?php _e( 'Post Meta', 'feed-pull' ); ?></option>
+							</select>
+							<input type="hidden" name="fp_field_map[<?php echo (int) $i; ?>][mapping_type]" value="post_field">
+						</td>
+						<td class="action">
+							<input style="visibility: hidden" type="button" value="<?php _e( 'Delete', 'feed-pull' ); ?>" class="delete">
+						</td>
+					</tr>
+				<?php endforeach; ?>
+			<?php for ( $i = 0; $i < count( self::get_required_fields() ); $i++ ) { if ( isset( $field_map[$i] ) ) unset( $field_map[$i] ); } foreach ( $field_map as $row_id => $field ) : ?>
 				<tr data-mapping-row-id="<?php echo (int) $row_id; ?>">
 					<td>
 						<input type="text" name="fp_field_map[<?php echo (int) $row_id; ?>][source_field]" value="<?php if ( ! empty( $field['source_field'] ) ) echo esc_attr( $field['source_field'] ); ?>">
@@ -351,6 +380,12 @@ class FP_Source_Feed_CPT {
 			} else {
 				delete_post_meta( $post_id, 'fp_post_status' );
 			}
+
+			if ( ! empty( $_POST['fp_allow_updates'] ) ) {
+				update_post_meta( $post_id, 'fp_allow_updates', absint( $_POST['fp_allow_updates'] ) );
+			} else {
+				delete_post_meta( $post_id, 'fp_allow_updates' );
+			}
 		}
 
 		if ( ! empty( $_POST['fp_field_mapping'] ) && wp_verify_nonce( $_POST['fp_field_mapping'], 'fp_field_mapping_action' ) ) {
@@ -358,7 +393,7 @@ class FP_Source_Feed_CPT {
 				$field_map = array();
 
 				foreach ( $_POST['fp_field_map'] as $row_id => $field ) {
-					if ( $row_id >= 1 && ( empty( $field['source_field'] ) ||
+					if ( $row_id >= count( self::get_required_fields() ) && ( empty( $field['source_field'] ) ||
 						empty( $field['destination_field'] ) || empty( $field['mapping_type'] ) ) ) {
 						continue;
 					}

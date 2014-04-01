@@ -10,6 +10,16 @@
   margin-right: 20px;
   font-weight: bold; }
 
+#visibility, #minor-publishing-actions {
+  display: none; }
+
+#fp_log ul .status {
+  color: green; }
+#fp_log ul .error {
+  color: red; }
+#fp_log ul .warning {
+  color: yellow; }
+
 #fp_field_mapping input[type=button] {
   width: 70px;
   font-size: 12px; }

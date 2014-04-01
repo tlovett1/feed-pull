@@ -50,6 +50,31 @@ class FP_Pull {
 		return $this->_verbose_log[$source_feed_id];
 	}
 
+	private function truncate_string( $string ) {
+		if ( strlen( $string ) > 50 ) {
+			$string = substr( $string, 0, 50 ) . '...';
+		}
+
+		return $string;
+	}
+
+	/**
+	 * Lookup a post by guid
+	 *
+	 * @param $guid
+	 * @return bool
+	 */
+	private function lookup_post_by_guid( $guid ) {
+		global $wpdb;
+
+		$post_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->posts WHERE guid = '%s' LIMIT 1", $guid ) );
+
+		if ( $post_id )
+			return $post_id;
+
+		return false;
+	}
+
 	/**
 	 * Pull from all our source feeds
 	 */
@@ -83,6 +108,7 @@ class FP_Pull {
 			$field_map = get_post_meta( $source_feed_id, 'fp_field_map', true );
 			$new_post_status = get_post_meta( $source_feed_id, 'fp_post_status', true );
 			$new_post_type = get_post_meta( $source_feed_id, 'fp_post_type', true );
+			$allow_updates = get_post_meta( $source_feed_id, 'fp_allow_updates', true );
 
 			if ( empty( $posts_xpath ) ) {
 				$this->log( 'No xpath to post items', $source_feed_id, 'error' );
@@ -135,16 +161,39 @@ class FP_Pull {
 						if ( empty( $values ) ) {
 							$this->log( 'Xpath to source field returns nothing for ' . $field['source_field'], $source_feed_id, 'warning' );
 						} elseif ( is_array( $values ) && count( $values ) === 1 ) {
-							$new_post_args[$field['destination_field']] = apply_filters( 'fp_pre_post_insert_value', (string) $values[0], $field );
+							$new_post_args[$field['destination_field']] = apply_filters( 'fp_pre_post_insert_value', (string) $values[0], $field, $post, $source_feed_id );
 						} else {
 							// Todo: is this possible?
 						}
 					}
 				}
 
-				$this->log( 'Attempting to create a new post with arguments ' . print_r( $new_post_args, true ), $source_feed_id, 'status' );
+				// Make sure we have all the required fields
+				$required_fields = FP_Source_Feed_CPT::get_required_fields();
+				foreach ( $new_post_args as $arg_key => $arg_value ) {
+					if ( ! empty( $arg_value ) && in_array( $arg_key, $required_fields ) ) {
+						unset( $required_fields[array_search( $arg_key, $required_fields )]);
+					}
+				}
 
-				$new_post_id = wp_insert_post( apply_filters( 'fp_new_post_args', $new_post_args ), true );
+				if ( ! empty( $required_fields ) ) {
+					$this->log( 'Missing required fields to create/update post', $source_feed_id, 'error' );
+					continue;
+				}
+
+				// Check if post exists by guid
+				$existing_post_id = $this->lookup_post_by_guid( $new_post_args['guid'] );
+				if ( ! empty( $existing_post_id ) ) {
+					if ( $allow_updates ) {
+						$new_post_args['ID'] = $existing_post_id;
+					} else {
+						$this->log( 'Post already exists and updates are not allowed.', $source_feed_id, 'error' );
+					}
+				}
+
+				$this->log( 'Attempting to create a new post with arguments ' . print_r( array_map( array( $this, 'truncate_string' ), $new_post_args ), true ), $source_feed_id, 'status' );
+
+				$new_post_id = wp_insert_post( apply_filters( 'fp_new_post_args', $new_post_args, $post, $source_feed_id ), true );
 
 				if ( is_wp_error( $new_post_id ) ) {
 					$this->log( 'Could not create new post: ' . $new_post_id->get_error_message(), 'error' );
@@ -158,11 +207,11 @@ class FP_Pull {
 						$values = $post->xpath( $field['source_field'] );
 
 						if ( empty( $values ) ) {
-							$this->log( 'Xpath to source field returns nothing for ' . $field['source_field'], $source_feed_id, 'warning' );
+							$this->log( 'Xpath to source field returns nothing for ' . $field['source_field'], $post, $source_feed_id, 'warning' );
 						} elseif ( is_array( $values ) && count( $values ) === 1 ) {
-							$meta_value = apply_filters( 'fp_pre_post_insert_value', $values[0], $field );
+							$meta_value = apply_filters( 'fp_pre_post_insert_value', $values[0], $field, $post, $source_feed_id );
 						} else {
-							$meta_value = apply_filters( 'fp_pre_post_insert_value', $values, $field );
+							$meta_value = apply_filters( 'fp_pre_post_insert_value', $values, $field, $post, $source_feed_id );
 						}
 
 						// Todo: sanitization?
@@ -172,7 +221,7 @@ class FP_Pull {
 			}
 
 			// Save last pull into log for source feed
-			if ( apply_filters( 'fp_log_last_pull', true ) ) {
+			if ( apply_filters( 'fp_log_last_pull', true, $source_feed_id ) ) {
 				// Todo: sanitiziation?
 				update_post_meta( $source_feed_id, 'fp_last_pull_log', $this->get_log( $source_feed_id ) );
 				update_post_meta( $source_feed_id, 'fp_last_pull_time', time() );

@@ -17,6 +17,26 @@
 
 }
 
+#visibility, #minor-publishing-actions {
+	display: none;
+}
+
+#fp_log {
+	ul {
+		.status {
+			color: green;
+		}
+
+		.error {
+			color: red;
+		}
+
+		.warning {
+			color: yellow;
+		}
+	}
+}
+
 #fp_field_mapping {
 	input[type=button] {
 		width: 70px;
