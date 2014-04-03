@@ -10,7 +10,7 @@ class FP_AJAX {
 	/**
 	 * Setup actions and filters
 	 *
-	 * @since 0.1
+	 * @since 0.1.0
 	 */
 	private function __construct() {
 		add_action( 'wp_ajax_pull', array( $this, 'action_pull' ) );
@@ -19,7 +19,7 @@ class FP_AJAX {
 	/**
 	 * Do a feed pull
 	 *
-	 * @since 0.1
+	 * @since 0.1.0
 	 * @return void
 	 */
 	public function action_pull() {
@@ -42,6 +42,7 @@ class FP_AJAX {
 	/**
 	 * Return an instance of the current class, create one if it doesn't exist
 	 *
+	 * @since 0.1.0
 	 * @return object
 	 */
 	public static function factory() {

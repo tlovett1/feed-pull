@@ -17,6 +17,8 @@ class FP_Feed_Pull {
 
 	/**
 	 * Setup the plugin
+	 *
+	 * @since 0.1.0
 	 */
 	public function __construct() {
 
@@ -32,17 +34,10 @@ class FP_Feed_Pull {
 		add_action( 'plugins_loaded', array( $this, 'action_plugins_loaded' ) );
     }
 
-	public function action_pull_check() {
-		if ( ! isset( $_GET['test_pull'] ) )
-			return;
-
-		new FP_Pull();
-	}
-
 	/**
 	 * Add options page
 	 *
-	 * @since 0.1
+	 * @since 0.1.0
 	 * @return void
 	 */
 	public function action_admin_menu() {
@@ -52,7 +47,7 @@ class FP_Feed_Pull {
 	/**
 	 * Register setting and sanitization callback
 	 *
-	 * @since 0.1
+	 * @since 0.1.0
 	 * @return void
 	 */
 	public function action_admin_init() {
@@ -63,7 +58,7 @@ class FP_Feed_Pull {
 	 * Sanitize options
 	 *
 	 * @param array $option
-	 * @since 0.1
+	 * @since 0.1.0
 	 * @return array
 	 */
 	public function sanitize_options( $option ) {
@@ -84,7 +79,7 @@ class FP_Feed_Pull {
 	/**
 	 * Localize plugin
 	 *
-	 * @since 0.1
+	 * @since 0.1.0
 	 * @return void
 	 */
 	public function action_plugins_loaded() {
@@ -94,6 +89,7 @@ class FP_Feed_Pull {
 	/**
 	 * Output settings
 	 *
+	 * @since 0.1.0
 	 * @return void
 	 */
 	public function screen_options() {
@@ -135,6 +131,7 @@ class FP_Feed_Pull {
     /**
      * Return an instance of the current class, create one if it doesn't exist
      *
+	 * @since 0.1.0
      * @return object
      */
     public static function factory() {
@@ -152,6 +149,7 @@ $fp_feed_pull = FP_Feed_Pull::factory();
 /**
  * Get plugin option with defaults
  *
+ * @since 0.1.0
  * @return array|mixed|void
  */
 function fp_get_option() {

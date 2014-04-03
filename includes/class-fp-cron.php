@@ -11,7 +11,7 @@ class FP_Cron {
 	/**
 	 * Setup actions and filters
 	 *
-	 * @since 0.1
+	 * @since 0.1.0
 	 * @uses add_action, add_filter
 	 */
 	private function __construct() {
@@ -24,7 +24,7 @@ class FP_Cron {
 	 * Add custom cron schedule
 	 *
 	 * @param array $schedules
-	 * @since 0.1
+	 * @since 0.1.0
 	 * @return array
 	 */
 	public function filter_cron_schedules( $schedules ) {
@@ -40,7 +40,7 @@ class FP_Cron {
 	/**
 	 * Setup cron jobs
 	 *
-	 * @since 0.1
+	 * @since 0.1.0
 	 * @return void
 	 */
 	public function schedule_events() {
@@ -54,7 +54,7 @@ class FP_Cron {
 	/**
 	 * Initiate a feed pull
 	 *
-	 * @since 0.1
+	 * @since 0.1.0
 	 */
 	public function pull() {
 		new FP_Pull();
@@ -63,6 +63,7 @@ class FP_Cron {
 	/**
 	 * Return an instance of the current class, create one if it doesn't exist
 	 *
+	 * @since 0.1.0
 	 * @return object
 	 */
 	public static function factory() {

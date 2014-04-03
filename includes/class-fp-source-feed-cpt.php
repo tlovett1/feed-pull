@@ -11,6 +11,8 @@ class FP_Source_Feed_CPT {
 
 	/**
 	 * Setup actions and filters
+	 *
+	 * @since 0.1.0
 	 */
 	public function __construct() {
         add_action( 'init', array( $this, 'setup_cpt' ) );
@@ -22,6 +24,8 @@ class FP_Source_Feed_CPT {
 
 	/**
 	 * Enqueue post new/edit screen scripts/styles
+	 *
+	 * @since 0.1.0
 	 */
 	public function action_admin_enqueue_scripts_css() {
 		global $pagenow;
@@ -47,6 +51,7 @@ class FP_Source_Feed_CPT {
 	/**
 	 * This method exists so required source feed fields are filterable
 	 *
+	 * @since 0.1.0
 	 * @return mixed|void
 	 */
 	public static function get_required_fields() {
@@ -62,8 +67,7 @@ class FP_Source_Feed_CPT {
 	 * Filter CPT messages
 	 *
 	 * @param array $messages
-	 * @since 0.1
-	 * @uses get_permalink, esc_url, wp_post_revision_title, __, add_query_arg
+	 * @since 0.1.0
 	 * @return array
 	 */
 	public function filter_post_updated_messages( $messages ) {
@@ -89,6 +93,8 @@ class FP_Source_Feed_CPT {
 
 	/**
 	 * Register source feed post type
+	 *
+	 * @since 0.1.0
 	 */
 	public function setup_cpt() {
 
@@ -127,6 +133,8 @@ class FP_Source_Feed_CPT {
 
 	/**
 	 * Register meta boxes
+	 *
+	 * @since 0.1.0
 	 */
 	public function add_meta_boxes() {
 		add_meta_box( 'fp_source_details', __( 'Source Feed Details', 'feed-pull' ), array( $this, 'meta_box_source_details' ), 'fp_feed', 'normal', 'core' );
@@ -145,12 +153,13 @@ class FP_Source_Feed_CPT {
 		</div>
 	<?php
 	}
+
 	/**
 	 * Change title text box label
 	 *
 	 * @param string $label
 	 * @param int $post
-	 * @since 0.1
+	 * @since 0.1.0
 	 * @return string
 	 */
 	public function filter_enter_title_here( $label, $post = 0 ) {
@@ -163,6 +172,7 @@ class FP_Source_Feed_CPT {
 	/**
 	 * Output source options meta box
 	 *
+	 * @since 0.1.0
 	 * @param $post
 	 */
 	public function meta_box_source_details( $post ) {
@@ -196,6 +206,7 @@ class FP_Source_Feed_CPT {
 	/**
 	 * Output new post options meta box
 	 *
+	 * @since 0.1.0
 	 * @param $post
 	 */
 	public function meta_box_content_details( $post ) {
@@ -238,6 +249,7 @@ class FP_Source_Feed_CPT {
 	/**
 	 * Output source feed pull log
 	 *
+	 * @since 0.1.0
 	 * @param $post
 	 */
 	public function meta_box_log( $post ) {
@@ -261,6 +273,7 @@ class FP_Source_Feed_CPT {
 	/**
 	 * Output field mapping meta box
 	 *
+	 * @since 0.1.0
 	 * @param $post
 	 */
 	public function meta_box_field_mapping( $post ) {
@@ -352,7 +365,7 @@ class FP_Source_Feed_CPT {
 	 * Save information associated with CPT
 	 *
 	 * @param int $post_id
-	 * @since 0.1
+	 * @since 0.1.0
 	 * @return void
 	 */
 	public function action_save_post( $post_id ) {
@@ -431,6 +444,7 @@ class FP_Source_Feed_CPT {
     /**
      * Return an instance of the current class, create one if it doesn't exist
      *
+	 * @since 0.1.0
      * @return object
      */
     public static function factory() {

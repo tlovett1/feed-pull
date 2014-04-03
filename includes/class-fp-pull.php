@@ -9,6 +9,9 @@ class FP_Pull {
 
 	/**
 	 * Instantiating this class does a pull
+	 *
+	 * @param int $source_feed_id
+	 * @since 0.1.0
 	 */
 	public function __construct( $source_feed_id = null ) {
 		$this->do_pull( $source_feed_id );
@@ -18,8 +21,9 @@ class FP_Pull {
 	 * Log a message during a feed pull
 	 *
 	 * @param $message
-	 * @param $source_feed_id
+	 * @param int $source_feed_id
 	 * @param string $type
+	 * @since 0.1.0
 	 */
 	private function log( $message, $source_feed_id, $type = 'status' ) {
 		if ( empty( $this->_verbose_log[$source_feed_id] ) ) {
@@ -36,6 +40,7 @@ class FP_Pull {
 	 * Get pull log for a source feed
 	 *
 	 * @param int $source_feed_id
+	 * @since 0.1.0
 	 * @return array|bool
 	 */
 	public function get_log( $source_feed_id = null ) {
@@ -50,6 +55,13 @@ class FP_Pull {
 		return $this->_verbose_log[$source_feed_id];
 	}
 
+	/**
+	 * Truncate a string to the end of a word
+	 *
+	 * @param string $string
+	 * @since 0.1.0
+	 * @return string
+	 */
 	private function truncate_string( $string ) {
 		if ( strlen( $string ) > 50 ) {
 			$string = preg_replace( '/\s+?(\S+)?$/', '', substr( $string, 0, 49 ) );
@@ -62,6 +74,7 @@ class FP_Pull {
 	 * Lookup a post by guid
 	 *
 	 * @param $guid
+	 * @since 0.1.0
 	 * @return bool
 	 */
 	private function lookup_post_by_guid( $guid ) {
@@ -81,6 +94,9 @@ class FP_Pull {
 
 	/**
 	 * Pull from all our source feeds
+	 *
+	 * @param int $source_feed_id
+	 * @since 0.1.0
 	 */
 	private function do_pull( $source_feed_id = null ) {
 
@@ -253,6 +269,7 @@ class FP_Pull {
 	 * Get contents of feed file
 	 *
 	 * @param $url
+	 * @since 0.1.0
 	 * @return array|string|WP_Error
 	 */
 	private function fetch_feed( $url ) {
