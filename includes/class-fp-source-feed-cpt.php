@@ -38,6 +38,7 @@ class FP_Source_Feed_CPT {
 			}
 
 			wp_enqueue_script( 'fp-post-admin', plugins_url( $js_path, dirname( __FILE__ ) ), array( 'jquery', 'underscore' ), '1.0', true );
+			wp_localize_script( 'fp-post-admin', 'FP_Settings', array( 'nonce' => wp_create_nonce( 'fp_pull_nonce' ) ) );
 
 			wp_enqueue_style( 'fp-post-admin', plugins_url( $css_path, dirname( __FILE__ ) ) );
 		}
@@ -132,8 +133,18 @@ class FP_Source_Feed_CPT {
 		add_meta_box( 'fp_content_details', __( 'New Content Details', 'feed-pull' ), array( $this, 'meta_box_content_details' ), 'fp_feed', 'normal', 'core' );
 		add_meta_box( 'fp_field_mapping', __( 'Field Mapping', 'feed-pull' ), array( $this, 'meta_box_field_mapping' ), 'fp_feed', 'normal', 'core' );
 		add_meta_box( 'fp_log', __( 'Pull Log', 'feed-pull' ), array( $this, 'meta_box_log' ), 'fp_feed', 'normal', 'core' );
+		add_meta_box( 'fp_manual_pull', __( 'Manual Pull', 'feed-pull' ), array( $this, 'meta_box_manual_pull' ), 'fp_feed', 'side', 'core' );
 	}
 
+	public function meta_box_manual_pull( $post ) {
+	?>
+		<p><?php _e( 'Click this button to manually pull from this feed otherwise you will have to wait for the cron job to execute.', 'feed-pull' ); ?></p>
+		<div class="button-container">
+			<input type="button" class="button" value="<?php _e( 'Do Feed Pull', 'feed-pull' ); ?>" id="fp_manual_pull">
+			<img id="fp-spinner" src="<?php echo home_url( '/wp-includes/images/wpspin.gif' ); ?>">
+		</div>
+	<?php
+	}
 	/**
 	 * Change title text box label
 	 *
@@ -217,7 +228,7 @@ class FP_Source_Feed_CPT {
 		<p>
 			<label for="fp_allow_updates"><?php _e( 'Update Existing Posts:', 'feed-pull' ); ?></label>
 			<select type="text" id="fp_allow_updates" name="fp_allow_updates">
-				<option value="0"><?php _e( 'No', 'feed-pull' ); ?></option>
+				<option  value="0"><?php _e( 'No', 'feed-pull' ); ?></option>
 				<option <?php selected( $allow_updates, 1 ); ?> value="1"><?php _e( 'Yes', 'feed-pull' ); ?></option>
 			</select>
 		</p>
@@ -286,7 +297,7 @@ class FP_Source_Feed_CPT {
 							<input type="hidden" name="fp_field_map[<?php echo (int) $i; ?>][mapping_type]" value="post_field">
 						</td>
 						<td class="action">
-							<input style="visibility: hidden" type="button" value="<?php _e( 'Delete', 'feed-pull' ); ?>" class="delete">
+							<input class="button" style="visibility: hidden" type="button" value="<?php _e( 'Delete', 'feed-pull' ); ?>" class="delete">
 						</td>
 					</tr>
 				<?php endforeach; ?>
@@ -305,7 +316,7 @@ class FP_Source_Feed_CPT {
 						</select>
 					</td>
 					<td class="action">
-						<input type="button" value="<?php _e( 'Delete', 'feed-pull' ); ?>" class="delete">
+						<input type="button" class="button" value="<?php _e( 'Delete', 'feed-pull' ); ?>" class="delete">
 					</td>
 				</tr>
 			<?php endforeach; ?>
@@ -327,12 +338,12 @@ class FP_Source_Feed_CPT {
 					</select>
 				</td>
 				<td class="action">
-					<input type="button" value="<?php _e( 'Delete', 'feed-pull' ); ?>" class="delete">
+					<input type="button" value="<?php _e( 'Delete', 'feed-pull' ); ?>" class="button delete">
 				</td>
 			</tr>
 		</script>
 		<div class="button-wrapper">
-			<input type="button" value="<?php _e( 'Add New', 'feed-pull' ); ?>" class="add-new">
+			<input type="button" value="<?php _e( 'Add New', 'feed-pull' ); ?>" class="add-new button">
 		</div>
 	<?php
 	}

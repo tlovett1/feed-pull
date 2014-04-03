@@ -2,7 +2,7 @@
  * JS to power the post administration screen
  */
 
-( function( $, _, window, undefined ) {
+( function( $, _, FP_Settings, window, undefined ) {
 
     "use strict";
 
@@ -17,6 +17,9 @@
             var $mappingMetaBox = $( '#fp_field_mapping' );
             var $mappingTable = $mappingMetaBox.find( 'table' );
             var $mappingTableBody = $mappingTable.find( 'tbody' );
+            var $manualPullButton = $( '#fp_manual_pull' );
+            var $postIDField = $( '#post_ID' );
+            var $manualPullSpinner = $( '#fp-spinner' );
 
             function getLastMappingRowID() {
                 return $mappingTableBody.find( 'tr').last().attr( 'data-mapping-row-id' );
@@ -34,8 +37,25 @@
                 $mappingTableBody.append( newRow );
             }
 
+            function doManualPull() {
+                $manualPullSpinner.animate( { 'opacity' : 1 } );
+
+                $.ajax( {
+                    'type' : 'post',
+                    'url' : ajaxurl,
+                    'data' : {
+                        'action' : 'pull',
+                        'nonce' : FP_Settings.nonce,
+                        'source_feed_id' : $postIDField.val()
+                    }
+                }).complete( function() {
+                    $manualPullSpinner.animate( { 'opacity' : 0 } );
+                } );
+            }
+
             $mappingTable.on( 'click', 'input.delete', handleDelete );
             $mappingMetaBox.on( 'click', 'input.add-new', handleAddNew );
+            $manualPullButton.on( 'click', doManualPull );
         }
 
 
@@ -58,4 +78,4 @@
 
     postAdmin.getInstance();
 
-} ( jQuery, _, window ) );
+} ( jQuery, _, FP_Settings, window ) );

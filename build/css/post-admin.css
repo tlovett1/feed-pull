@@ -20,6 +20,13 @@
 #fp_log ul .warning {
   color: yellow; }
 
+#fp_manual_pull .button-container {
+  line-height: 28px; }
+  #fp_manual_pull .button-container #fp-spinner {
+    vertical-align: middle;
+    opacity: 0;
+    margin-left: .3em; }
+
 #fp_field_mapping input[type=button] {
   width: 70px;
   font-size: 12px; }

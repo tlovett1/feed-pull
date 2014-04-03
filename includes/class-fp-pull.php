@@ -10,8 +10,8 @@ class FP_Pull {
 	/**
 	 * Instantiating this class does a pull
 	 */
-	public function __construct() {
-		$this->do_pull();
+	public function __construct( $source_feed_id = null ) {
+		$this->do_pull( $source_feed_id );
 	}
 
 	/**
@@ -38,7 +38,7 @@ class FP_Pull {
 	 * @param int $source_feed_id
 	 * @return array|bool
 	 */
-	public function get_log( $source_feed_id = 0 ) {
+	public function get_log( $source_feed_id = null ) {
 		if ( empty( $source_feed_id ) ) {
 			return $this->_verbose_log;
 		}
@@ -52,7 +52,7 @@ class FP_Pull {
 
 	private function truncate_string( $string ) {
 		if ( strlen( $string ) > 50 ) {
-			$string = substr( $string, 0, 50 ) . '...';
+			$string = preg_replace( '/\s+?(\S+)?$/', '', substr( $string, 0, 49 ) );
 		}
 
 		return $string;
@@ -67,10 +67,14 @@ class FP_Pull {
 	private function lookup_post_by_guid( $guid ) {
 		global $wpdb;
 
-		$post_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->posts WHERE guid = '%s' LIMIT 1", $guid ) );
+		// We sanitize using this function because WP inserts the guid after sanitizing with it
+		$sanitized_guid = sanitize_post_field( 'guid', $guid, 0, 'db' );
 
-		if ( $post_id )
+		$post_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid = '%s' LIMIT 1", $sanitized_guid ) );
+
+		if ( $post_id ) {
 			return $post_id;
+		}
 
 		return false;
 	}
@@ -78,7 +82,14 @@ class FP_Pull {
 	/**
 	 * Pull from all our source feeds
 	 */
-	private function do_pull() {
+	private function do_pull( $source_feed_id = null ) {
+
+		// Do nothing if feed pulling is not turned on
+		$option = fp_get_option();
+		if ( empty( $option['enable_feed_pull'] ) ) {
+			return;
+		}
+
 		$args = array(
 			'post_type' => 'fp_feed',
 			'post_status' => 'publish',
@@ -86,6 +97,10 @@ class FP_Pull {
 			'no_found_rows' => false,
 			'cache_results' => false,
 		);
+
+		if ( ! empty( $source_feed_id ) ) {
+			$args['p'] = (int) $source_feed_id;
+		}
 
 		$source_feeds = new WP_Query( $args );
 
@@ -185,13 +200,14 @@ class FP_Pull {
 				$existing_post_id = $this->lookup_post_by_guid( $new_post_args['guid'] );
 				if ( ! empty( $existing_post_id ) ) {
 					if ( $allow_updates ) {
+						$this->log( 'Attempting to update post with guid ' . $new_post_args['guid'], $source_feed_id, 'status' );
 						$new_post_args['ID'] = $existing_post_id;
 					} else {
 						$this->log( 'Post already exists and updates are not allowed.', $source_feed_id, 'error' );
 					}
+				} else {
+					$this->log( 'Attempting to create a new post with guid ' . $new_post_args['guid'], $source_feed_id, 'status' );
 				}
-
-				$this->log( 'Attempting to create a new post with arguments ' . print_r( array_map( array( $this, 'truncate_string' ), $new_post_args ), true ), $source_feed_id, 'status' );
 
 				$new_post_id = wp_insert_post( apply_filters( 'fp_new_post_args', $new_post_args, $post, $source_feed_id ), true );
 
