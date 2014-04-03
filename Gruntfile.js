@@ -1,39 +1,39 @@
 module.exports = function ( grunt ) {
     grunt.initConfig( {
-        pkg: grunt.file.readJSON( 'package.json' ),
-        uglify: {
-            js: {
-                files: {
-                    'build/js/post-admin.min.js': ['js/post-admin.js']
+        pkg : grunt.file.readJSON( 'package.json' ),
+        uglify : {
+            js : {
+                files : {
+                    'build/js/post-admin.min.js' : ['js/post-admin.js']
                 }
             }
         },
-        jshint: {
-            options: {
-                smarttabs: true
+        jshint : {
+            options : {
+                smarttabs : true
             }
         },
-        sass: {
-            dist: {
-                files: {
+        sass : {
+            dist : {
+                files : {
                     'build/css/post-admin.css' : 'scss/post-admin.scss'
                 }
             }
         },
-        cssmin: {
-            backend: {
-                src: 'build/css/post-admin.css',
-                dest: 'build/css/post-admin.min.css'
+        cssmin : {
+            backend : {
+                src : 'build/css/post-admin.css',
+                dest : 'build/css/post-admin.min.css'
             }
         },
-        watch: {
-            files: [
+        watch : {
+            files : [
                 'js/*',
                 'scss/*'
             ],
-            tasks: ['uglify', 'sass', 'cssmin:backend']
+            tasks : ['uglify', 'sass', 'cssmin:backend']
         }
-    });
+    } );
     grunt.loadNpmTasks( 'grunt-contrib-uglify' );
     grunt.loadNpmTasks( 'grunt-contrib-jshint' );
     grunt.loadNpmTasks( 'grunt-contrib-sass' );
