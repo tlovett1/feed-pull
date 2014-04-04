@@ -80,10 +80,9 @@ class FP_Pull {
 	private function lookup_post_by_guid( $guid ) {
 		global $wpdb;
 
-		// We sanitize using this function because WP inserts the guid after sanitizing with it
-		$sanitized_guid = sanitize_post_field( 'guid', $guid, 0, 'db' );
+		$sanitized_guid = esc_url_raw( $guid );
 
-		$post_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid = '%s' LIMIT 1", $sanitized_guid ) );
+		$post_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = 'fp_guid' AND meta_value = '%s' LIMIT 1", $sanitized_guid ) );
 
 		if ( $post_id ) {
 			return $post_id;
@@ -140,6 +139,7 @@ class FP_Pull {
 			$new_post_status = get_post_meta( $source_feed_id, 'fp_post_status', true );
 			$new_post_type = get_post_meta( $source_feed_id, 'fp_post_type', true );
 			$allow_updates = get_post_meta( $source_feed_id, 'fp_allow_updates', true );
+			$post_categories = get_post_meta( $source_feed_id, 'fp_new_post_categories', true );
 
 			if ( empty( $posts_xpath ) ) {
 				$this->log( 'No xpath to post items', $source_feed_id, 'error' );
@@ -181,6 +181,7 @@ class FP_Pull {
 					'post_status' => $new_post_status,
 					'post_excerpt' => '',
 				);
+
 				$meta_fields = array();
 
 				foreach ( $field_map as $field ) {
@@ -212,28 +213,59 @@ class FP_Pull {
 					continue;
 				}
 
+				$update = false;
+
 				// Check if post exists by guid
 				$existing_post_id = $this->lookup_post_by_guid( $new_post_args['guid'] );
 				if ( ! empty( $existing_post_id ) ) {
 					if ( $allow_updates ) {
+						if ( strpos( $new_post_args['guid'], 'post_type=' ) ) {
+							error_log( print_r( $new_post_args, true ) . "\n\n" );
+						}
+						$update = true;
 						$this->log( 'Attempting to update post with guid ' . $new_post_args['guid'], $source_feed_id, 'status' );
 						$new_post_args['ID'] = $existing_post_id;
+						unset( $new_post_args['guid'] );
 					} else {
 						$this->log( 'Post already exists and updates are not allowed.', $source_feed_id, 'error' );
+						continue;
 					}
 				} else {
-					$this->log( 'Attempting to create a new post with guid ' . $new_post_args['guid'], $source_feed_id, 'status' );
+					$this->log( 'Attempting to create new post with guid ' . $new_post_args['guid'], $source_feed_id, 'status' );
 				}
 
-				$new_post_id = wp_insert_post( apply_filters( 'fp_new_post_args', $new_post_args, $post, $source_feed_id ), true );
+				$new_post_id = wp_insert_post( apply_filters( 'fp_post_args', $new_post_args, $post, $source_feed_id ), true );
+
+				// Set categories if they exist
+				// Todo: what if the post type does not support categories?
+				if ( ! empty( $post_categories ) ) {
+					$sanitized_post_categories = array_map( 'absint', $post_categories );
+
+					wp_set_object_terms( $new_post_id, apply_filters( 'fp_post_categories', $sanitized_post_categories ), 'category', true );
+				}
+
 
 				if ( is_wp_error( $new_post_id ) ) {
-					$this->log( 'Could not create new post: ' . $new_post_id->get_error_message(), 'error' );
+					if ( $update ) {
+						$this->log( 'Could not update post: ' . $new_post_id->get_error_message(), 'error' );
+					} else {
+						$this->log( 'Could not create new post: ' . $new_post_id->get_error_message(), 'error' );
+					}
 				} else {
-					$this->log( 'Created new post (' . $new_post_id . ') with title: ' . get_the_title( $new_post_id ) , $source_feed_id, 'status' );
+					if ( $update ) {
+						$this->log( 'Updated post (' . $new_post_id . ') with title: ' . get_the_title( $new_post_id ) , $source_feed_id, 'status' );
+					} else {
+						$this->log( 'Created new post (' . $new_post_id . ') with title: ' . get_the_title( $new_post_id ) , $source_feed_id, 'status' );
+					}
 
 					// Mark the post as syndicated
 					update_post_meta( $new_post_id, 'fp_syndicated_post', true );
+
+					// Save GUID for post in meta. We have to do this because of this core WP
+					// bug: https://core.trac.wordpress.org/ticket/24248
+					if ( ! $update ) {
+						update_post_meta( $new_post_id, 'fp_guid', esc_url_raw( $new_post_args['guid'] ) );
+					}
 
 					foreach ( $meta_fields as $field ) {
 						$values = $post->xpath( $field['source_field'] );
@@ -241,9 +273,9 @@ class FP_Pull {
 						if ( empty( $values ) ) {
 							$this->log( 'Xpath to source field returns nothing for ' . $field['source_field'], $post, $source_feed_id, 'warning' );
 						} elseif ( is_array( $values ) && count( $values ) === 1 ) {
-							$meta_value = apply_filters( 'fp_pre_post_insert_value', $values[0], $field, $post, $source_feed_id );
+							$meta_value = apply_filters( 'fp_pre_post_meta_value', $values[0], $field, $post, $source_feed_id );
 						} else {
-							$meta_value = apply_filters( 'fp_pre_post_insert_value', $values, $field, $post, $source_feed_id );
+							$meta_value = apply_filters( 'fp_pre_post_meta_value', $values, $field, $post, $source_feed_id );
 						}
 
 						// Todo: sanitization?

@@ -190,16 +190,10 @@ class FP_Source_Feed_CPT {
 		if ( ! empty( $posts_xpath ) )
 			$posts_xpath = esc_attr( $posts_xpath );
 
-		$xml_namespace = get_post_meta( $post->ID, 'fp_xml_namespace', true );
-		if ( ! empty( $xml_namespace ) )
-			$xml_namespace = esc_attr( $xml_namespace );
-
 	?>
+		<p><em><?php _e( 'Tell us about the feed from which we are pulling.', 'feed-pull' ); ?></em></p>
 		<p>
 			<label for="fp_feed_url"><?php _e( 'Source Feed URL:', 'feed-pull' ); ?></label> <input class="regular-text" type="text" id="fp_feed_url" name="fp_feed_url" value="<?php echo $feed_url; ?>" />
-		</p>
-		<p>
-			<label for="fp_xml_namepsace"><?php _e( 'XML Namespace:', 'feed-pull' ); ?></label> <input class="regular-text" type="text" id="fp_xml_namespace" name="fp_xml_namespace" value="<?php echo $xml_namespace; ?>" />
 		</p>
 		<p>
 			<label for="fp_posts_xpath"><?php _e( 'XPath to Posts:', 'feed-pull' ); ?></label> <input class="regular-text" type="text" id="fp_posts_xpath" name="fp_posts_xpath" value="<?php echo $posts_xpath; ?>" />
@@ -219,11 +213,15 @@ class FP_Source_Feed_CPT {
 		$current_post_type = get_post_meta( $post->ID, 'fp_post_type', true );
 		$current_post_status = get_post_meta( $post->ID, 'fp_post_status', true );
 		$allow_updates = get_post_meta( $post->ID, 'fp_allow_updates', true );
+		$current_cats = get_post_meta( $post->ID, 'fp_new_post_categories', true );
+		if ( empty( $current_cats ) ) {
+			$current_cats = array();
+		}
 
 		$post_types = get_post_types( array( 'public' => true ), 'names' );
 		$post_statii = get_post_statuses();
 		?>
-		<p><?php _e( 'Configure the content we pull from the feeds.', 'feed-pull' ); ?></p>
+		<p><em><?php _e( 'Configure the content we pull from the feeds.', 'feed-pull' ); ?></em></p>
 		<p>
 			<label for="fp_post_type"><?php _e( 'Post Type:', 'feed-pull' ); ?></label>
 			<select type="text" id="fp_post_type" name="fp_post_type">
@@ -245,6 +243,16 @@ class FP_Source_Feed_CPT {
 			<select type="text" id="fp_allow_updates" name="fp_allow_updates">
 				<option  value="0"><?php _e( 'No', 'feed-pull' ); ?></option>
 				<option <?php selected( $allow_updates, 1 ); ?> value="1"><?php _e( 'Yes', 'feed-pull' ); ?></option>
+			</select>
+		</p>
+
+		<?php $cats = get_categories( array( 'hide_empty' => 0 ) ); ?>
+		<p>
+			<label for="fp_new_post_categories"><?php _e( 'Automatically Add New Posts to Categories:', 'feed-pull' ); ?></label><br>
+			<select id="fp_new_post_categories" name="fp_new_post_categories[]" multiple="multiple">
+				<?php foreach ( $cats as $cat ) : ?>
+					<option <?php selected( in_array( $cat->term_id, $current_cats ), true ); ?> value="<?php echo (int) $cat->term_id; ?>"><?php echo esc_html( $cat->category_nicename ); ?></option>
+				<?php endforeach; ?>
 			</select>
 		</p>
 	<?php
@@ -286,7 +294,7 @@ class FP_Source_Feed_CPT {
 		$field_map = get_post_meta( $post->ID, 'fp_field_map', true );
 
 		?>
-		<p><?php _e( 'Map fields from your source feed to fields in your new content.', 'feed-pull' ); ?></p>
+		<p><em><?php _e( 'Map fields from your source feed to fields in your new content.', 'feed-pull' ); ?></em></p>
 		<table cellpadding="0" cellspacing="0">
 			<thead>
 				<tr>
@@ -359,6 +367,7 @@ class FP_Source_Feed_CPT {
 				</td>
 			</tr>
 		</script>
+
 		<div class="button-wrapper">
 			<input type="button" value="<?php _e( 'Add New', 'feed-pull' ); ?>" class="add-new button">
 		</div>
@@ -388,12 +397,6 @@ class FP_Source_Feed_CPT {
 			} else {
 				delete_post_meta( $post_id, 'fp_posts_xpath' );
 			}
-
-			if ( ! empty( $_POST['fp_xml_namespace'] ) ) {
-				update_post_meta( $post_id, 'fp_xml_namespace', sanitize_text_field( $_POST['fp_xml_namespace'] ) );
-			} else {
-				delete_post_meta( $post_id, 'fp_xml_namespace' );
-			}
 		}
 
 		if ( ! empty( $_POST['fp_new_content_details'] ) && wp_verify_nonce( $_POST['fp_new_content_details'], 'fp_new_content_details_action' ) ) {
@@ -413,6 +416,12 @@ class FP_Source_Feed_CPT {
 				update_post_meta( $post_id, 'fp_allow_updates', absint( $_POST['fp_allow_updates'] ) );
 			} else {
 				delete_post_meta( $post_id, 'fp_allow_updates' );
+			}
+
+			if ( ! empty( $_POST['fp_new_post_categories'] ) ) {
+				update_post_meta( $post_id, 'fp_new_post_categories', array_map( 'absint', $_POST['fp_new_post_categories'] ) );
+			} else {
+				delete_post_meta( $post_id, 'fp_new_post_categories' );
 			}
 		}
 
