@@ -20,6 +20,9 @@ class FP_Source_Feed_CPT {
 		add_action( 'admin_enqueue_scripts' , array( $this, 'action_admin_enqueue_scripts_css' ) );
 		add_filter( 'enter_title_here', array( $this, 'filter_enter_title_here' ), 10, 2 );
 		add_action( 'save_post', array( $this, 'action_save_post' ) );
+		add_filter( 'manage_fp_feed_posts_columns' , array( $this, 'filter_columns' ) );
+		add_action( 'manage_fp_feed_posts_custom_column' , array( $this, 'action_custom_columns' ), 10, 2 );
+		add_action( 'post_submitbox_misc_actions', array( $this, 'action_post_submitbox_misc_actions' ) );
     }
 
 	/**
@@ -124,6 +127,7 @@ class FP_Source_Feed_CPT {
 			'rewrite' => false,
 			'capability_type' => 'post',
 			'hierarchical' => false,
+			'menu_icon' => plugins_url( '/img/feed-document.png', dirname( __FILE__ ) ),
 			'register_meta_box_cb' => array( $this, 'add_meta_boxes' ),
 			'supports' => array( 'title' )
 		);
@@ -439,6 +443,60 @@ class FP_Source_Feed_CPT {
 			}
 		}
 
+	}
+
+	/**
+	 * Add new columns
+	 *
+	 * @param array $columns
+	 * @since 0.1.0
+	 * @return array
+	 */
+	public function filter_columns( $columns ) {
+		$columns['fp_last_pull_time'] = __( 'Last Pulled On', 'my-reviews' );
+
+		// Move date column to the back
+		unset($columns['date']);
+		$columns['date'] = __( 'Date', 'feed-pull' );
+
+		return $columns;
+	}
+
+	public function action_post_submitbox_misc_actions() {
+		?>
+		<div class="misc-pub-section misc-pub-fp-last-pulled">
+			<label><?php _e( 'Last Pulled On:', 'feed-pull' ); ?></label>
+			<span><strong>
+				<?php
+				$last_pull = get_post_meta( get_the_ID(), 'fp_last_pull_time', true );
+				if ( ! empty( $last_pull ) ) {
+					echo date( 'F j, Y, g:i a', (int) $last_pull );
+				} else {
+					_e( 'Never', 'feed-pull' );
+				}
+				?>
+			</strong></span>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Displays custom columns
+	 *
+	 * @param string $column
+	 * @param int $post_id
+	 * @since 0.1.0
+	 * @return void
+	 */
+	public function action_custom_columns( $column, $post_id ) {
+		if ( 'fp_last_pull_time' == $column ) {
+			$last_pull = get_post_meta( $post_id, 'fp_last_pull_time', true );
+			if ( ! empty( $last_pull ) ) {
+				echo date( 'F j, Y, g:i a', (int) $last_pull );
+			} else {
+				_e( 'Never', 'feed-pull' );
+			}
+		}
 	}
 
     /**

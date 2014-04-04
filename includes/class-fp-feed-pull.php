@@ -28,7 +28,6 @@ class FP_Feed_Pull {
 		require_once( dirname( __FILE__ ) . '/class-fp-cron.php' );
 		require_once( dirname( __FILE__ ) . '/class-fp-ajax.php' );
 
-		add_action( 'wp_loaded', array( $this, 'action_pull_check' ) );
 		add_action( 'admin_menu', array( $this, 'action_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'action_admin_init' ) );
 		add_action( 'plugins_loaded', array( $this, 'action_plugins_loaded' ) );

@@ -21,6 +21,13 @@
 	display: none;
 }
 
+.misc-pub-fp-last-pulled {
+	label {
+		background: url("../../img/feed-document.png") no-repeat top left;
+		padding-left: 25px;
+	}
+}
+
 #fp_log {
 	ul {
 		.status {

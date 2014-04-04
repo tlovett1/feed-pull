@@ -256,7 +256,7 @@ class FP_Pull {
 			if ( apply_filters( 'fp_log_last_pull', true, $source_feed_id ) ) {
 				// Todo: sanitiziation?
 				update_post_meta( $source_feed_id, 'fp_last_pull_log', $this->get_log( $source_feed_id ) );
-				update_post_meta( $source_feed_id, 'fp_last_pull_time', time() );
+				update_post_meta( $source_feed_id, 'fp_last_pull_time', current_time( 'timestamp' ) );
 			}
 
 			do_action( 'fp_post_source_feed_pull', $source_feed_id );
