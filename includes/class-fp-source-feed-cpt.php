@@ -197,6 +197,7 @@ class FP_Source_Feed_CPT {
 		</p>
 		<p>
 			<label for="fp_posts_xpath"><?php _e( 'XPath to Posts:', 'feed-pull' ); ?></label> <input class="regular-text" type="text" id="fp_posts_xpath" name="fp_posts_xpath" value="<?php echo $posts_xpath; ?>" />
+			<?php _e( '(i.e. channel/item)', 'feed-pull' ); ?>
 		</p>
 	<?php
 	}
@@ -248,7 +249,7 @@ class FP_Source_Feed_CPT {
 
 		<?php $cats = get_categories( array( 'hide_empty' => 0 ) ); ?>
 		<p>
-			<label for="fp_new_post_categories"><?php _e( 'Automatically Add New Posts to Categories:', 'feed-pull' ); ?></label><br>
+			<label for="fp_new_post_categories"><?php _e( 'Automatically Add New Posts to Categories:', 'feed-pull' ); ?></label>
 			<select id="fp_new_post_categories" name="fp_new_post_categories[]" multiple="multiple">
 				<?php foreach ( $cats as $cat ) : ?>
 					<option <?php selected( in_array( $cat->term_id, $current_cats ), true ); ?> value="<?php echo (int) $cat->term_id; ?>"><?php echo esc_html( $cat->category_nicename ); ?></option>

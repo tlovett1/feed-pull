@@ -5,7 +5,7 @@
 
 class FP_Pull {
 
-	private $_verbose_log = array();
+	private $_feed_log = array();
 
 	/**
 	 * Instantiating this class does a pull
@@ -23,16 +23,18 @@ class FP_Pull {
 	 * @param $message
 	 * @param int $source_feed_id
 	 * @param string $type
+	 * @param object $post
 	 * @since 0.1.0
 	 */
-	private function log( $message, $source_feed_id, $type = 'status' ) {
-		if ( empty( $this->_verbose_log[$source_feed_id] ) ) {
-			$this->_verbose_log[$source_feed_id] = array();
+	private function log( $message, $source_feed_id, $type = 'status', $post = null ) {
+		if ( empty( $this->_feed_log[$source_feed_id] ) ) {
+			$this->_feed_log[$source_feed_id] = array();
 		}
 
-		$this->_verbose_log[$source_feed_id][] = array(
+		$this->_feed_log[$source_feed_id][] = array(
 			'message' => $message,
 			'type' => $type,
+			'post' => null,
 		);
 	}
 
@@ -45,35 +47,20 @@ class FP_Pull {
 	 */
 	public function get_log( $source_feed_id = null ) {
 		if ( empty( $source_feed_id ) ) {
-			return $this->_verbose_log;
+			return $this->_feed_log;
 		}
 
-		if ( empty( $this->_verbose_log[$source_feed_id] ) ) {
+		if ( empty( $this->_feed_log[$source_feed_id] ) ) {
 			return false;
 		}
 
-		return $this->_verbose_log[$source_feed_id];
-	}
-
-	/**
-	 * Truncate a string to the end of a word
-	 *
-	 * @param string $string
-	 * @since 0.1.0
-	 * @return string
-	 */
-	private function truncate_string( $string ) {
-		if ( strlen( $string ) > 50 ) {
-			$string = preg_replace( '/\s+?(\S+)?$/', '', substr( $string, 0, 49 ) );
-		}
-
-		return $string;
+		return $this->_feed_log[$source_feed_id];
 	}
 
 	/**
 	 * Lookup a post by guid
 	 *
-	 * @param $guid
+	 * @param string $guid
 	 * @since 0.1.0
 	 * @return bool
 	 */
@@ -120,21 +107,18 @@ class FP_Pull {
 		$source_feeds = new WP_Query( $args );
 
 		if ( ! $source_feeds->have_posts() ) {
-			$this->log( 'No source feeds found', 'error' );
 			return;
 		}
 
 		while ( $source_feeds->have_posts() ) {
 			$source_feeds->the_post();
 
-			$this->log( 'Pulling source feed: ' . get_the_title(), 'status' );
-
 			$source_feed_id = get_the_ID();
 
+			$this->log( __( 'Pulling feed', 'feed-pull' ), $source_feed_id, 'status' );
 
 			$feed_url = get_post_meta( $source_feed_id, 'fp_feed_url', true );
 			$posts_xpath = get_post_meta( $source_feed_id, 'fp_posts_xpath', true );
-			//$namespace = get_post_meta( $source_feed_id, 'fp_namespace', true );
 			$field_map = get_post_meta( $source_feed_id, 'fp_field_map', true );
 			$new_post_status = get_post_meta( $source_feed_id, 'fp_post_status', true );
 			$new_post_type = get_post_meta( $source_feed_id, 'fp_post_type', true );
@@ -142,24 +126,24 @@ class FP_Pull {
 			$post_categories = get_post_meta( $source_feed_id, 'fp_new_post_categories', true );
 
 			if ( empty( $posts_xpath ) ) {
-				$this->log( 'No xpath to post items', $source_feed_id, 'error' );
+				$this->log( __( 'No xpath to post items', 'feed-pull' ), $source_feed_id, 'error' );
 				continue;
 			}
 
 			if ( empty( $feed_url ) ) {
-				$this->log( 'No feed URL', $source_feed_id, 'error' );
+				$this->log( __( 'No feed URL', 'feed-pull' ), $source_feed_id, 'error' );
 				continue;
 			}
 
 			if ( empty( $field_map ) ) {
-				$this->log( 'No field map', $source_feed_id, 'error' );
+				$this->log( __( 'No field map', 'feed-pull' ), $source_feed_id, 'error' );
 				continue;
 			}
 
 			$raw_feed_contents = $this->fetch_feed( $feed_url );
 
 			if ( is_wp_error( $raw_feed_contents ) ) {
-				$this->log( 'Could not fetch feed', $source_feed_id, 'error' );
+				$this->log( __( 'Could not fetch feed', 'feed-pull' ), $source_feed_id, 'error' );
 				continue;
 			}
 
@@ -168,11 +152,11 @@ class FP_Pull {
 			$posts = $feed->xpath( $posts_xpath );
 
 			if ( empty( $posts ) ) {
-				$this->log( 'No items in feed', $source_feed_id, 'warning' );
+				$this->log( __( 'No items in feed', 'feed-pull' ), $source_feed_id, 'warning' );
 				continue;
 			}
 
-			do_action( 'fp_pre_source_feed_pull', $source_feed_id );
+			do_action( 'fp_pre_feed_pull', $source_feed_id );
 
 			foreach ( $posts as $post ) {
 
@@ -191,7 +175,7 @@ class FP_Pull {
 						$values = $post->xpath( $field['source_field'] );
 
 						if ( empty( $values ) ) {
-							$this->log( 'Xpath to source field returns nothing for ' . $field['source_field'], $source_feed_id, 'warning' );
+							$this->log( sprintf( __( 'Xpath to source field returns nothing for %s', 'feed-pull' ), sanitize_text_field( $field['source_field'] ) ), $source_feed_id, 'warning' );
 						} elseif ( is_array( $values ) && count( $values ) === 1 ) {
 							$new_post_args[$field['destination_field']] = apply_filters( 'fp_pre_post_insert_value', (string) $values[0], $field, $post, $source_feed_id );
 						} else {
@@ -209,7 +193,7 @@ class FP_Pull {
 				}
 
 				if ( ! empty( $required_fields ) ) {
-					$this->log( 'Missing required fields to create/update post', $source_feed_id, 'error' );
+					$this->log( __( 'Missing required fields to create/update post', 'feed-pull' ), $source_feed_id, 'error' );
 					continue;
 				}
 
@@ -217,21 +201,19 @@ class FP_Pull {
 
 				// Check if post exists by guid
 				$existing_post_id = $this->lookup_post_by_guid( $new_post_args['guid'] );
+
 				if ( ! empty( $existing_post_id ) ) {
 					if ( $allow_updates ) {
-						if ( strpos( $new_post_args['guid'], 'post_type=' ) ) {
-							error_log( print_r( $new_post_args, true ) . "\n\n" );
-						}
 						$update = true;
-						$this->log( 'Attempting to update post with guid ' . $new_post_args['guid'], $source_feed_id, 'status' );
+						$this->log( sprintf( __( 'Attempting to update post with guid %s', 'feed-pull' ), sanitize_text_field( $new_post_args['guid'] ) ), $source_feed_id, 'status' );
 						$new_post_args['ID'] = $existing_post_id;
 						unset( $new_post_args['guid'] );
 					} else {
-						$this->log( 'Post already exists and updates are not allowed.', $source_feed_id, 'error' );
+						$this->log( __( 'Post already exists and updates are not allowed.', 'feed-pull' ), $source_feed_id, 'error' );
 						continue;
 					}
 				} else {
-					$this->log( 'Attempting to create new post with guid ' . $new_post_args['guid'], $source_feed_id, 'status' );
+					$this->log( sprintf( __( 'Attempting to create post with guid %s', 'feed-pull' ), sanitize_text_field( $new_post_args['guid'] ) ), $source_feed_id, 'status' );
 				}
 
 				$new_post_id = wp_insert_post( apply_filters( 'fp_post_args', $new_post_args, $post, $source_feed_id ), true );
@@ -247,15 +229,19 @@ class FP_Pull {
 
 				if ( is_wp_error( $new_post_id ) ) {
 					if ( $update ) {
-						$this->log( 'Could not update post: ' . $new_post_id->get_error_message(), 'error' );
+						$this->log( sprintf( __( 'Could not update post: %s', 'feed-pull' ), $new_post_id->get_error_message() ), 'error' );
 					} else {
-						$this->log( 'Could not create new post: ' . $new_post_id->get_error_message(), 'error' );
+						$this->log( sprintf( __( 'Could not create post: %s', 'feed-pull' ), $new_post_id->get_error_message() ), 'error' );
 					}
 				} else {
+					$post = get_post( $new_post_id );
+
 					if ( $update ) {
-						$this->log( 'Updated post (' . $new_post_id . ') with title: ' . get_the_title( $new_post_id ) , $source_feed_id, 'status' );
+						do_action( 'fp_updated_post', $new_post_id, $source_feed_id );
+						$this->log( __( 'Updated post', 'feed-pull' ), $source_feed_id, 'status', $post );
 					} else {
-						$this->log( 'Created new post (' . $new_post_id . ') with title: ' . get_the_title( $new_post_id ) , $source_feed_id, 'status' );
+						do_action( 'fp_created_post', $new_post_id, $source_feed_id );
+						$this->log( __( 'Created new post', 'feed-pull' ), $source_feed_id, 'status', $post );
 					}
 
 					// Mark the post as syndicated
@@ -271,7 +257,7 @@ class FP_Pull {
 						$values = $post->xpath( $field['source_field'] );
 
 						if ( empty( $values ) ) {
-							$this->log( 'Xpath to source field returns nothing for ' . $field['source_field'], $post, $source_feed_id, 'warning' );
+							$this->log( sprintf( __( 'Xpath to source field returns nothing for %s', 'feed-pull' ), sanitize_text_field( $field['source_field'] ) ), $source_feed_id, 'warning', $post );
 						} elseif ( is_array( $values ) && count( $values ) === 1 ) {
 							$meta_value = apply_filters( 'fp_pre_post_meta_value', $values[0], $field, $post, $source_feed_id );
 						} else {
@@ -291,7 +277,7 @@ class FP_Pull {
 				update_post_meta( $source_feed_id, 'fp_last_pull_time', current_time( 'timestamp' ) );
 			}
 
-			do_action( 'fp_post_source_feed_pull', $source_feed_id );
+			do_action( 'fp_post_feed_pull', $source_feed_id );
 		}
 
 		wp_reset_postdata();
