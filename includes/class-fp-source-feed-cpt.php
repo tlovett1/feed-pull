@@ -222,7 +222,7 @@ class FP_Source_Feed_CPT {
 		$post_types = get_post_types( array( 'public' => true ), 'names' );
 		$post_statii = get_post_statuses();
 		?>
-		<p><em><?php _e( 'Configure the content we pull from the feeds.', 'feed-pull' ); ?></em></p>
+		<p><em><?php _e( 'Configure the content we pull from the feed.', 'feed-pull' ); ?></em></p>
 		<p>
 			<label for="fp_post_type"><?php _e( 'Post Type:', 'feed-pull' ); ?></label>
 			<select type="text" id="fp_post_type" name="fp_post_type">
@@ -275,7 +275,15 @@ class FP_Source_Feed_CPT {
 		<?php else : ?>
 			<ul>
 			<?php foreach ( $log as $log_item ) : ?>
-				<li><span class="<?php echo esc_attr( $log_item['type'] ); ?>"><?php echo ucwords( esc_html( $log_item['type'] ) ); ?></span>: <?php echo esc_html( $log_item['message'] ); ?></li>
+				<li>
+					<span class="<?php echo esc_attr( $log_item['type'] ); ?>">
+						<?php echo ucwords( esc_html( $log_item['type'] ) ); ?>
+					</span>:
+					<?php echo esc_html( $log_item['message'] ); ?>
+					<?php if ( ! empty( $log_item['post_id'] ) ) : ?>
+					- <?php edit_post_link( __( 'Edit Post' ), '', '', $log_item['post_id'] ); ?>
+					<?php endif; ?>
+				</li>
 			<?php endforeach; ?>
 			</ul>
 

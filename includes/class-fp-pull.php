@@ -26,15 +26,15 @@ class FP_Pull {
 	 * @param object $post
 	 * @since 0.1.0
 	 */
-	private function log( $message, $source_feed_id, $type = 'status', $post = null ) {
+	private function log( $message, $source_feed_id, $type = 'status', $post_id = null ) {
 		if ( empty( $this->_feed_log[$source_feed_id] ) ) {
 			$this->_feed_log[$source_feed_id] = array();
 		}
 
 		$this->_feed_log[$source_feed_id][] = array(
-			'message' => $message,
-			'type' => $type,
-			'post' => null,
+			'message' => sanitize_text_field( $message ),
+			'type' => sanitize_text_field( $type ),
+			'post_id' => (int) $post_id,
 		);
 	}
 
@@ -62,7 +62,7 @@ class FP_Pull {
 	 *
 	 * @param string $guid
 	 * @since 0.1.0
-	 * @return bool
+	 * @return bool|int
 	 */
 	private function lookup_post_by_guid( $guid ) {
 		global $wpdb;
@@ -73,6 +73,24 @@ class FP_Pull {
 
 		if ( $post_id ) {
 			return $post_id;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Handle feed logging
+	 *
+	 * @param $source_feed_id
+	 * @return bool
+	 */
+	private function handle_feed_log( $source_feed_id ) {
+		if ( apply_filters( 'fp_log_last_pull', true, $source_feed_id ) ) {
+			// Todo: sanitiziation?
+			update_post_meta( $source_feed_id, 'fp_last_pull_log', $this->get_log( $source_feed_id ) );
+			update_post_meta( $source_feed_id, 'fp_last_pull_time', current_time( 'timestamp' ) );
+
+			return true;
 		}
 
 		return false;
@@ -125,18 +143,23 @@ class FP_Pull {
 			$allow_updates = get_post_meta( $source_feed_id, 'fp_allow_updates', true );
 			$post_categories = get_post_meta( $source_feed_id, 'fp_new_post_categories', true );
 
+			$fatal_error = false;
+
 			if ( empty( $posts_xpath ) ) {
 				$this->log( __( 'No xpath to post items', 'feed-pull' ), $source_feed_id, 'error' );
+				$this->handle_feed_log( $source_feed_id );
 				continue;
 			}
 
 			if ( empty( $feed_url ) ) {
 				$this->log( __( 'No feed URL', 'feed-pull' ), $source_feed_id, 'error' );
+				$this->handle_feed_log( $source_feed_id );
 				continue;
 			}
 
 			if ( empty( $field_map ) ) {
 				$this->log( __( 'No field map', 'feed-pull' ), $source_feed_id, 'error' );
+				$this->handle_feed_log( $source_feed_id );
 				continue;
 			}
 
@@ -144,6 +167,7 @@ class FP_Pull {
 
 			if ( is_wp_error( $raw_feed_contents ) ) {
 				$this->log( __( 'Could not fetch feed', 'feed-pull' ), $source_feed_id, 'error' );
+				$this->handle_feed_log( $source_feed_id );
 				continue;
 			}
 
@@ -153,6 +177,7 @@ class FP_Pull {
 
 			if ( empty( $posts ) ) {
 				$this->log( __( 'No items in feed', 'feed-pull' ), $source_feed_id, 'warning' );
+				$this->handle_feed_log( $source_feed_id );
 				continue;
 			}
 
@@ -234,14 +259,12 @@ class FP_Pull {
 						$this->log( sprintf( __( 'Could not create post: %s', 'feed-pull' ), $new_post_id->get_error_message() ), 'error' );
 					}
 				} else {
-					$post = get_post( $new_post_id );
-
 					if ( $update ) {
 						do_action( 'fp_updated_post', $new_post_id, $source_feed_id );
-						$this->log( __( 'Updated post', 'feed-pull' ), $source_feed_id, 'status', $post );
+						$this->log( __( 'Updated post', 'feed-pull' ), $source_feed_id, 'status', $new_post_id );
 					} else {
 						do_action( 'fp_created_post', $new_post_id, $source_feed_id );
-						$this->log( __( 'Created new post', 'feed-pull' ), $source_feed_id, 'status', $post );
+						$this->log( __( 'Created new post', 'feed-pull' ), $source_feed_id, 'status', $new_post_id );
 					}
 
 					// Mark the post as syndicated
@@ -257,7 +280,7 @@ class FP_Pull {
 						$values = $post->xpath( $field['source_field'] );
 
 						if ( empty( $values ) ) {
-							$this->log( sprintf( __( 'Xpath to source field returns nothing for %s', 'feed-pull' ), sanitize_text_field( $field['source_field'] ) ), $source_feed_id, 'warning', $post );
+							$this->log( sprintf( __( 'Xpath to source field returns nothing for %s', 'feed-pull' ), sanitize_text_field( $field['source_field'] ) ), $source_feed_id, 'warning', $new_post_id );
 						} elseif ( is_array( $values ) && count( $values ) === 1 ) {
 							$meta_value = apply_filters( 'fp_pre_post_meta_value', $values[0], $field, $post, $source_feed_id );
 						} else {
@@ -271,11 +294,7 @@ class FP_Pull {
 			}
 
 			// Save last pull into log for source feed
-			if ( apply_filters( 'fp_log_last_pull', true, $source_feed_id ) ) {
-				// Todo: sanitiziation?
-				update_post_meta( $source_feed_id, 'fp_last_pull_log', $this->get_log( $source_feed_id ) );
-				update_post_meta( $source_feed_id, 'fp_last_pull_time', current_time( 'timestamp' ) );
-			}
+			$this->handle_feed_log( $source_feed_id );
 
 			do_action( 'fp_post_feed_pull', $source_feed_id );
 		}
