@@ -23,7 +23,7 @@ class FP_Pull {
 	 * @param $message
 	 * @param int $source_feed_id
 	 * @param string $type
-	 * @param object $post
+	 * @param int $post_id
 	 * @since 0.1.0
 	 */
 	private function log( $message, $source_feed_id, $type = 'status', $post_id = null ) {
