@@ -17,16 +17,13 @@ be syndicated into WordPress. You can map feed attributes to post fields or post
 to any post type you want. The plugin comes with a convenient settings page so you can configure things like when feeds
 are syndicated.
 
-Feed Pull vs. Syndication
----------------
+= Feed Pull vs. Syndication =
+
 Feed Pull takes a lot of concepts from Syndication. Syndication is a more advanced plugin that offers more than just
-feed pulling. Here are some differences between the two plugins
-* Feed Pull is a plugin for pulling content out of XML feeds. Syndication has feed pulling as well as content
-pushing features
-* Feed Pull has a much friendlier feed management screen. Both Syndication and Feed Pull use the WordPress post edit,
-screen, however Feed Pull offers a much cleaner experience from the way options are presented to the instructions
-provided. At the moment Feed Pull does not have all the features of Syndication such as taxonomy and constant
-field mapping. However, Feed Pull probably has everything you need and is very extensible.
+feed pulling. Here are some differences between the two plugins:
+
+* Feed Pull is a plugin for pulling content out of XML feeds. Syndication has feed pulling as well as content pushing features.
+* Feed Pull has a much friendlier feed management screen. Both Syndication and Feed Pull use the WordPress post edit, screen, however Feed Pull offers a much cleaner experience from the way options are presented to the instructions provided. At the moment Feed Pull does not have all the features of Syndication such as taxonomy and constant field mapping. However, Feed Pull probably has everything you need and is very extensible.
 * Feed Pull has far superior error logging to Syndication.
 * Feed Pull allows you to schedule content pulling in the future.
 * Feed Pull allows you to do manual pulls using AJAX rather than a sometimes frustrating one-time cron job.
@@ -38,8 +35,8 @@ field mapping. However, Feed Pull probably has everything you need and is very e
 1. Make sure "Pull feeds" is set to yes. Feeds are syndicated using WordPress cron. This means your content will be
 pulled in the background. By default feed pulls occur once per hour.
 
-Configure a Feed
---------------
+= Configure a Feed =
+
 1. After activating the plugin, you should now see a "Source Feeds" menu item in your admin menu. Add a new source
 feed.
 1. Enter the URL of any XML feed in the feed url input box.
