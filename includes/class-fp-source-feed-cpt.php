@@ -351,7 +351,7 @@ class FP_Source_Feed_CPT {
 						</select>
 					</td>
 					<td class="action">
-						<input type="button" class="button" value="<?php _e( 'Delete', 'feed-pull' ); ?>" class="delete">
+						<input type="button" class="button delete" value="<?php _e( 'Delete', 'feed-pull' ); ?>">
 					</td>
 				</tr>
 			<?php endforeach; endif; ?>
