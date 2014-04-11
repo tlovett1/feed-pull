@@ -51,19 +51,7 @@
                         'nonce' : FP_Settings.nonce,
                         'source_feed_id' : $postIDField.val()
                     }
-                }).done( function( data ) {
-                    if ( data && data.log ) {
-                        var $items = $( '<ul>' );
-
-                        for ( var i = 0; i < data.log.length; i++ ) {
-                            var newItem = _.template( logItemTemplate, data.log[i] );
-
-                            $items.append( newItem );
-                        }
-
-                        $logMetaBox.html( $items );
-                    }
-
+                } ).always( function() {
                     $manualPullSpinner.animate( { 'opacity' : 0 } );
                 } );
             }

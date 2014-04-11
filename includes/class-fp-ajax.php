@@ -34,26 +34,6 @@ class FP_AJAX {
 
 			new FP_Pull( $source_feed_id );
 			$output['success'] = true;
-
-			$formatted_log = array();
-			$log = get_post_meta( $source_feed_id, 'fp_last_pull_log', true );
-
-			foreach ( $log as $log_item ) {
-				$formatted_log_item = array(
-					'type' => esc_html( $log_item['type'] ),
-					'pretty_type' => ucwords( esc_html( $log_item['type'] ) ),
-					'message' => esc_html( $log_item['message'] ),
-				);
-
-				if ( ! empty( $log_item['post_id'] ) ) {
-					$formatted_log_item['post_id'] = (int) $log_item['post_id'];
-					$formatted_log_item['edit_post_link'] = get_edit_post_link( $log_item['post_id'] );
-				}
-
-				$formatted_log[] = $formatted_log_item;
-			}
-
-			$output['log'] = $formatted_log;
 		}
 
 		wp_send_json( $output );

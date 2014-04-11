@@ -288,18 +288,6 @@ class FP_Source_Feed_CPT {
 			</ul>
 
 		<?php endif; ?>
-
-		<script type="text/underscores" id='log-item-template'>
-			<li>
-				<span class="<%- type %>">
-					<%- pretty_type %>
-				</span>:
-				<%- message %>
-				<% if ( typeof( post_id ) !== 'undefined' ) { %>
-					<a href="<%- edit_post_link %>"><?php _e( 'Edit Post', 'feed-pull' ); ?></a>
-				<% } %>
-			</li>
-		</script>
 	<?php
 	}
 
