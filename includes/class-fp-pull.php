@@ -279,10 +279,8 @@ class FP_Pull {
 
 						if ( empty( $values ) ) {
 							$this->log( sprintf( __( 'Xpath to source field returns nothing for %s', 'feed-pull' ), sanitize_text_field( $field['source_field'] ) ), $source_feed_id, 'warning', $new_post_id );
-						} elseif ( is_array( $values ) && count( $values ) === 1 ) {
-							$meta_value = apply_filters( 'fp_pre_post_meta_value', $values[0], $field, $post, $source_feed_id );
 						} else {
-							$meta_value = apply_filters( 'fp_pre_post_meta_value', $values, $field, $post, $source_feed_id );
+							$meta_value = apply_filters( 'fp_pre_post_meta_value', (string) $values[0], $field, $post, $source_feed_id );
 						}
 
 						// Todo: sanitization?
