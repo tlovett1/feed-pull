@@ -4,7 +4,7 @@ Donate link: http://www.taylorlovett.com
 Tags: feeds, syndication, rss feed, rss, atom feed, feed pull, feed reader
 Requires at least: 3.0
 Tested up to: 3.9
-Stable tag: 0.1.2
+Stable tag: 0.1.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -50,7 +50,10 @@ permalink that you can map to the post GUID. GUID's allow the plugin to determin
 been syndicated or not.
 
 == Changelog ==
-= 0.1.1 =
+= 0.1.3 =
+Tiny bug fixes
+
+= 0.1.2 =
 Tiny bug fixes
 Refresh logging meta box on single pull
 
