@@ -143,8 +143,6 @@ class FP_Pull {
 			$allow_updates = get_post_meta( $source_feed_id, 'fp_allow_updates', true );
 			$post_categories = get_post_meta( $source_feed_id, 'fp_new_post_categories', true );
 
-			$fatal_error = false;
-
 			if ( empty( $posts_xpath ) ) {
 				$this->log( __( 'No xpath to post items', 'feed-pull' ), $source_feed_id, 'error' );
 				$this->handle_feed_log( $source_feed_id );
@@ -273,7 +271,7 @@ class FP_Pull {
 					// Save GUID for post in meta. We have to do this because of this core WP
 					// bug: https://core.trac.wordpress.org/ticket/24248
 					if ( ! $update ) {
-						update_post_meta( $new_post_id, 'fp_guid', esc_url_raw( $new_post_args['guid'] ) );
+						update_post_meta( $new_post_id, 'fp_guid', sanitize_text_field( $new_post_args['guid'] ) );
 					}
 
 					foreach ( $meta_fields as $field ) {
