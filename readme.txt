@@ -52,6 +52,10 @@ been syndicated or not.
 == Changelog ==
 = 0.1.1 =
 Tiny bug fixes
+Refresh logging meta box on single pull
+
+= 0.1.1 =
+Tiny bug fixes
 
 = 0.1.0 =
 Plugin release
