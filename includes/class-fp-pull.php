@@ -67,7 +67,7 @@ class FP_Pull {
 	private function lookup_post_by_guid( $guid ) {
 		global $wpdb;
 
-		$sanitized_guid = esc_url_raw( $guid );
+		$sanitized_guid = sanitize_text_field( $guid );
 
 		$post_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = 'fp_guid' AND meta_value = '%s' LIMIT 1", $sanitized_guid ) );
 
