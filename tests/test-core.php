@@ -43,6 +43,21 @@ class FPTestCore extends WP_UnitTestCase {
 				)
 			)
 		),
+		'broken.com' => array(
+			'feed_url' => 'http://broken.com/broken/news/feed',
+			'feed_post_status' => 'publish',
+			'posts_xpath' => 'channel/item',
+			'feed_post_type' => 'post',
+			'allow_updates' => true,
+			'categories' => array( 1 ),
+			'field_map' => array(
+				array(
+					'source_field' => 'name',
+					'destination_field' => 'post_title',
+					'mapping_type' => 'post_field',
+				),
+			)
+		),
 	);
 
 	/**
@@ -130,6 +145,34 @@ class FPTestCore extends WP_UnitTestCase {
 		$second_pull_posts_num = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM $wpdb->posts WHERE post_status='publish' AND post_type='%s'", $this->feeds['WP.org']['feed_post_type'] ) );
 		$this->assertEquals( $posts_num, $second_pull_posts_num );
 
+		// Make sure feed has a "Last Pull Time" and a pull log
+		$last_pull_time = get_post_meta( $feed_id, 'fp_last_pull_time', true);
+		$last_pull_log = get_post_meta( $feed_id, 'fp_last_pull_log', true );
+		$this->assertTrue( ! empty( $last_pull_time ) );
+		$this->assertTrue( ! empty( $last_pull_log ) );
+
+	}
+
+	/**
+	 *  Test that nothing happens when pulling is off
+	 */
+	public function testDisabledPull() {
+		$feed_id = $this->_createSourceFeed( 'WP.org' );
+		$this->_setupSourceFeed( $feed_id, $this->feeds['WP.org'] );
+
+		$feed_id = $this->_createSourceFeed( 'broken.com' );
+		$this->_setupSourceFeed( $feed_id, $this->feeds['broken.com'] );
+
+		// Disable feed pulls
+		$option = fp_get_option();
+		$option['enable_feed_pull'] = 0;
+		update_option( FP_OPTION_NAME, $option );
+
+		$pull = new FP_Pull();
+		$pull_log = $pull->get_log();
+
+		// Log should be completely empty
+		$this->assertEmpty( $pull_log );
 	}
 }
 
