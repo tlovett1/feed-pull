@@ -39,6 +39,26 @@ class FP_Pull {
 	}
 
 	/**
+	 * Grab log messages by type
+	 *
+	 * @param int $source_feed_id
+	 * @param string $type
+	 * @since 0.1.5
+	 * @return boolean
+	 */
+	public function get_log_messages_by_type( $source_feed_id, $type ) {
+		$messages = array();
+
+		foreach ( $this->_feed_log[$source_feed_id] as $log_entry ) {
+			if ( $type == $log_entry['type'] ) {
+				$messages[] = $log_entry;
+			}
+		}
+
+		return $messages;
+	}
+
+	/**
 	 * Get pull log for a source feed
 	 *
 	 * @param int $source_feed_id
