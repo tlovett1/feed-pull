@@ -4,7 +4,7 @@ Donate link: http://www.taylorlovett.com
 Tags: feeds, syndication, rss feed, rss, atom feed, feed pull, feed reader
 Requires at least: 3.0
 Tested up to: 3.9
-Stable tag: 0.1.4
+Stable tag: 0.1.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -27,6 +27,8 @@ feed pulling. Here are some differences between the two plugins:
 * Feed Pull has far superior error logging to Syndication.
 * Feed Pull allows you to schedule content pulling in the future.
 * Feed Pull allows you to do manual pulls using AJAX rather than a sometimes frustrating one-time cron job.
+
+Fork the plugin on [http://github.com/tlovett1/feed-pull](Github)
 
 == Installation ==
 
