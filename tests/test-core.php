@@ -37,9 +37,9 @@ class FPTestCore extends WP_UnitTestCase {
 					'mapping_type' => 'post_field',
 				),
 				array(
-					'source_field' => 'dc:creator',
-					'destination_field' => 'creator',
-					'mapping_type' => 'post_meta',
+					'source_field' => 'pubDate',
+					'destination_field' => 'post_date',
+					'mapping_type' => 'post_field',
 				)
 			)
 		),
@@ -56,6 +56,51 @@ class FPTestCore extends WP_UnitTestCase {
 					'destination_field' => 'post_title',
 					'mapping_type' => 'post_field',
 				),
+			)
+		),
+		'qz.xml' => array(
+			'feed_url' => 'tests/xml/qz.xml',
+			'feed_post_status' => 'publish',
+			'posts_xpath' => 'channel/item',
+			'feed_post_type' => 'post',
+			'allow_updates' => true,
+			'categories' => array(),
+			'field_map' => array(
+				array(
+					'source_field' => 'title',
+					'destination_field' => 'post_title',
+					'mapping_type' => 'post_field',
+				),
+				array(
+					'source_field' => 'guid',
+					'destination_field' => 'guid',
+					'mapping_type' => 'post_field',
+				),
+				array(
+					'source_field' => 'content:encoded',
+					'destination_field' => 'post_content',
+					'mapping_type' => 'post_field',
+				),
+				array(
+					'source_field' => 'description',
+					'destination_field' => 'excerpt',
+					'mapping_type' => 'post_field',
+				),
+				array(
+					'source_field' => 'pubDate',
+					'destination_field' => 'post_date',
+					'mapping_type' => 'post_field',
+				),
+				array(
+					'source_field' => 'dc:creator',
+					'destination_field' => 'post_author',
+					'mapping_type' => 'post_field',
+				),
+				array(
+					'source_field' => 'link',
+					'destination_field' => 'old_link',
+					'mapping_type' => 'post_meta',
+				)
 			)
 		),
 	);
@@ -89,7 +134,7 @@ class FPTestCore extends WP_UnitTestCase {
 	 */
 	private function _setupSourceFeed( $feed_id, $args ) {
 
-		update_post_meta( $feed_id, 'fp_feed_url', esc_url_raw( $args['feed_url'] ) );
+		update_post_meta( $feed_id, 'fp_feed_url', sanitize_text_field( $args['feed_url'] ) );
 		update_post_meta( $feed_id, 'fp_post_status', sanitize_text_field( $args['feed_post_status'] ) );
 		update_post_meta( $feed_id, 'fp_posts_xpath', sanitize_text_field( $args['posts_xpath'] ) );
 		update_post_meta( $feed_id, 'fp_post_type', sanitize_text_field( $args['feed_post_type'] ) );
@@ -111,6 +156,62 @@ class FPTestCore extends WP_UnitTestCase {
 
 			$this->assertTrue( ! is_wp_error( $feed_id ) );
 		}
+	}
+
+	public function testPostMeta() {
+		$feed_id = $this->_createSourceFeed( 'qz.xml' );
+		$this->_setupSourceFeed( $feed_id, $this->feeds['qz.xml'] );
+
+		$first_pull = new FP_Pull();
+
+		// Make sure our pull resulted in no errors or warnings
+		$errors = $first_pull->get_log_messages_by_type( $feed_id, 'error' );
+		$this->assertTrue( empty( $errors ) );
+		$warnings = $first_pull->get_log_messages_by_type( $feed_id, 'warning' );
+		$this->assertTrue( empty( $warnings ) );
+
+		// Grab some posts
+		$args = array(
+			'post_type' => 'post',
+			'posts_per_page' => 5,
+			'no_found_rows' => true,
+			'cache_results' => false,
+			'meta_key' => 'fp_syndicated_post',
+			'meta_value' => 1,
+		);
+
+		$query = new WP_Query( $args );
+
+		$this->assertTrue( $query->have_posts() );
+
+		$meta_found = 0;
+		foreach ( $query->posts as $post ) {
+			$old_link = get_post_meta( $post->ID, 'old_link', true );
+
+			if ( ! empty( $old_link ) ) {
+				$meta_found++;
+			}
+		}
+
+		$this->assertEquals( $meta_found, 5 );
+	}
+
+	public function testAuthorMapping() {
+
+	}
+
+	/**
+	 * Test a broken feed
+	 */
+	public function testBrokenFeedPull() {
+		$feed_id = $this->_createSourceFeed( 'broken.com' );
+		$this->_setupSourceFeed( $feed_id, $this->feeds['broken.com'] );
+
+		$first_pull = new FP_Pull();
+
+		// Make sure our pull resulted in no errors or warnings
+		$errors = $first_pull->get_log_messages_by_type( $feed_id, 'error' );
+		$this->assertTrue( ! empty( $errors ) );
 	}
 
 	/**

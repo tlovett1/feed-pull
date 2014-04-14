@@ -44,7 +44,7 @@ class FP_Pull {
 	 * @param int $source_feed_id
 	 * @param string $type
 	 * @since 0.1.5
-	 * @return boolean
+	 * @return array
 	 */
 	public function get_log_messages_by_type( $source_feed_id, $type ) {
 		$messages = array();
@@ -162,6 +162,7 @@ class FP_Pull {
 			$new_post_type = get_post_meta( $source_feed_id, 'fp_post_type', true );
 			$allow_updates = get_post_meta( $source_feed_id, 'fp_allow_updates', true );
 			$post_categories = get_post_meta( $source_feed_id, 'fp_new_post_categories', true );
+			$smart_author_mapping = get_post_meta( $source_feed_id, 'fp_smart_author_mapping', true );
 
 			if ( empty( $posts_xpath ) ) {
 				$this->log( __( 'No xpath to post items', 'feed-pull' ), $source_feed_id, 'error' );
@@ -189,7 +190,14 @@ class FP_Pull {
 				continue;
 			}
 
-			$feed = simplexml_load_string( $raw_feed_contents );
+			// Suppress all warnings/errors for this
+			$feed = @simplexml_load_string( $raw_feed_contents );
+
+			if ( ! $feed ) {
+				$this->log( __( 'Feed could not be parsed', 'feed-pull' ), $source_feed_id, 'error' );
+				$this->handle_feed_log( $source_feed_id );
+				continue;
+			}
 
 			$posts = $feed->xpath( $posts_xpath );
 
@@ -259,6 +267,39 @@ class FP_Pull {
 					$this->log( sprintf( __( 'Attempting to create post with guid %s', 'feed-pull' ), sanitize_text_field( $new_post_args['guid'] ) ), $source_feed_id, 'status' );
 				}
 
+				// Some post fields need special attention
+				if ( apply_filters( 'fp_format_post_dates', true, $new_post_args, $post, $source_feed_id ) ) {
+					if ( ! empty( $new_post_args['post_date'] ) ) {
+						$new_post_args['post_date'] = date( 'Y-m-d H:i:s', strtotime( $new_post_args['post_date'] ) );
+					}
+
+					if ( ! empty( $new_post_args['post_date_gmt'] ) ) {
+						$new_post_args['post_date_gmt'] = date( 'Y-m-d H:i:s', strtotime( $new_post_args['post_date_gmt'] ) );
+					}
+				}
+
+				// Handle smart author mapping
+				if ( ! empty( $new_post_args['post_author'] ) && ! empty( $smart_author_mapping ) ) {
+
+					if ( ! is_numeric( $new_post_args['post_author'] ) ) {
+						// if we have an author that is not an ID, let's try to lookup the author
+
+						if ( is_email(  $new_post_args['post_author'] ) ) {
+							$user = get_user_by( 'email', $new_post_args['post_author'] );
+						} else {
+							$user = get_user_by( 'login', $new_post_args['post_author'] );
+
+							if ( ! $user ) {
+								$user = get_user_by( 'slug', $new_post_args['post_author'] );
+							}
+						}
+
+						if ( $user ) {
+							$new_post_args['post_author'] = $user->ID;
+						}
+					}
+				}
+
 				$new_post_id = wp_insert_post( apply_filters( 'fp_post_args', $new_post_args, $post, $source_feed_id ), true );
 
 				// Set categories if they exist
@@ -267,14 +308,13 @@ class FP_Pull {
 					$sanitized_post_categories = array_map( 'absint', $post_categories );
 
 					wp_set_object_terms( $new_post_id, apply_filters( 'fp_post_categories', $sanitized_post_categories ), 'category', true );
-				}
-
+				};
 
 				if ( is_wp_error( $new_post_id ) ) {
 					if ( $update ) {
-						$this->log( sprintf( __( 'Could not update post: %s', 'feed-pull' ), $new_post_id->get_error_message() ), 'error' );
+						$this->log( sprintf( __( 'Could not update post: %s', 'feed-pull' ), $new_post_id->get_error_message() ), $source_feed_id, 'error' );
 					} else {
-						$this->log( sprintf( __( 'Could not create post: %s', 'feed-pull' ), $new_post_id->get_error_message() ), 'error' );
+						$this->log( sprintf( __( 'Could not create post: %s', 'feed-pull' ), $new_post_id->get_error_message() ), $source_feed_id, 'error' );
 					}
 				} else {
 					if ( $update ) {
@@ -286,7 +326,7 @@ class FP_Pull {
 					}
 
 					// Mark the post as syndicated
-					update_post_meta( $new_post_id, 'fp_syndicated_post', true );
+					update_post_meta( $new_post_id, 'fp_syndicated_post', 1 );
 
 					// Save GUID for post in meta. We have to do this because of this core WP
 					// bug: https://core.trac.wordpress.org/ticket/24248
@@ -321,17 +361,38 @@ class FP_Pull {
 	/**
 	 * Get contents of feed file
 	 *
-	 * @param $url
+	 * @param $url_or_path
 	 * @since 0.1.0
 	 * @return array|string|WP_Error
 	 */
-	private function fetch_feed( $url ) {
-		$request = wp_remote_get( $url );
+	private function fetch_feed( $url_or_path ) {
+		if ( ! preg_match( '#^https?://#i', $url_or_path ) ) {
+			// if we have an absolute path, we can just use fopen. This is really only for unit testing
 
-		if ( is_wp_error( $request ) ) {
-			return $request;
+			$file_handle = @fopen( $url_or_path, 'r' );
+
+			if ( ! $file_handle ) {
+				return new WP_Error( 'fp_bad_feed_path', __( 'Could not read contents of feed path', 'feed-pull' ) );
+			}
+
+			$file_contents = '';
+
+			while ( ! feof( $file_handle ) ) {
+				$file_contents .= fgets( $file_handle );
+			}
+
+			fclose( $file_handle );
+
+			return $file_contents;
+
+		} else {
+			$request = wp_remote_get( $url_or_path );
+
+			if ( is_wp_error( $request ) ) {
+				return $request;
+			}
+
+			return wp_remote_retrieve_body( $request );
 		}
-
-		return wp_remote_retrieve_body( $request );
 	}
 }

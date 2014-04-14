@@ -214,6 +214,7 @@ class FP_Source_Feed_CPT {
 		$current_post_type = get_post_meta( $post->ID, 'fp_post_type', true );
 		$current_post_status = get_post_meta( $post->ID, 'fp_post_status', true );
 		$allow_updates = get_post_meta( $post->ID, 'fp_allow_updates', true );
+		$smart_author_mapping = get_post_meta( $post->ID, 'fp_smart_author_mapping', true );
 		$current_cats = get_post_meta( $post->ID, 'fp_new_post_categories', true );
 		if ( empty( $current_cats ) ) {
 			$current_cats = array();
@@ -245,6 +246,20 @@ class FP_Source_Feed_CPT {
 				<option  value="0"><?php _e( 'No', 'feed-pull' ); ?></option>
 				<option <?php selected( $allow_updates, 1 ); ?> value="1"><?php _e( 'Yes', 'feed-pull' ); ?></option>
 			</select>
+		</p>
+
+		<p>
+			<label for="fp_smart_author_mapping"><?php _e( 'Smart Author Mapping:', 'feed-pull' ); ?></label>
+			<select type="text" id="fp_smart_author_mapping" name="fp_smart_author_mapping">
+				<option  value="0"><?php _e( 'No', 'feed-pull' ); ?></option>
+				<option <?php selected( $smart_author_mapping, 1 ); ?> value="1"><?php _e( 'Yes', 'feed-pull' ); ?></option>
+			</select>
+			<div class="field-description">
+				<?php _e( 'When smart author mapping is turned on, a field mapped to post_author will be handled like so: An integer will be treated as an
+				author ID; if the author ID matches an existing author, the post will be attributed to that author. A string will be treated as a
+				username, email, or nicename; if the username, email, or nicename exists as a user the post will be attributed to that author, otherwise the post will be
+				attributed to the current user.', 'feed-pull' ); ?>
+			</div>
 		</p>
 
 		<?php $cats = get_categories( array( 'hide_empty' => 0 ) ); ?>
@@ -428,6 +443,12 @@ class FP_Source_Feed_CPT {
 				delete_post_meta( $post_id, 'fp_allow_updates' );
 			}
 
+			if ( ! empty( $_POST['fp_smart_author_mapping'] ) ) {
+				update_post_meta( $post_id, 'fp_smart_author_mapping', absint( $_POST['fp_smart_author_mapping'] ) );
+			} else {
+				delete_post_meta( $post_id, 'fp_smart_author_mapping' );
+			}
+
 			if ( ! empty( $_POST['fp_new_post_categories'] ) ) {
 				update_post_meta( $post_id, 'fp_new_post_categories', array_map( 'absint', $_POST['fp_new_post_categories'] ) );
 			} else {
@@ -482,6 +503,10 @@ class FP_Source_Feed_CPT {
 	}
 
 	public function action_post_submitbox_misc_actions() {
+		if ( 'fp_feed' != get_post_type() ) {
+			return;
+		}
+
 		?>
 		<div class="misc-pub-section misc-pub-fp-last-pulled">
 			<label><?php _e( 'Last Pulled On:', 'feed-pull' ); ?></label>

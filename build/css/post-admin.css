@@ -8,6 +8,9 @@
 #fp_content_details label,
 #fp_source_details label {
   display: block; }
+#fp_content_details .field-description,
+#fp_source_details .field-description {
+  font-style: italic; }
 
 #visibility, #minor-publishing-actions {
   display: none; }
