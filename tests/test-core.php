@@ -6,6 +6,7 @@ class FPTestCore extends WP_UnitTestCase {
 	 * Huge associative array for feed configurations
 	 *
 	 * @var array
+	 * @since 0.1.5
 	 */
 	private $feeds = array(
 		'WP.org' => array(
@@ -13,7 +14,8 @@ class FPTestCore extends WP_UnitTestCase {
 			'feed_post_status' => 'publish',
 			'posts_xpath' => 'channel/item',
 			'feed_post_type' => 'post',
-			'allow_updates' => true,
+			'smart_author_mapping' => 0,
+			'allow_updates' => 1,
 			'categories' => array(),
 			'field_map' => array(
 				array(
@@ -48,7 +50,8 @@ class FPTestCore extends WP_UnitTestCase {
 			'feed_post_status' => 'publish',
 			'posts_xpath' => 'channel/item',
 			'feed_post_type' => 'post',
-			'allow_updates' => true,
+			'smart_author_mapping' => 0,
+			'allow_updates' => 1,
 			'categories' => array( 1 ),
 			'field_map' => array(
 				array(
@@ -63,7 +66,8 @@ class FPTestCore extends WP_UnitTestCase {
 			'feed_post_status' => 'publish',
 			'posts_xpath' => 'channel/item',
 			'feed_post_type' => 'post',
-			'allow_updates' => true,
+			'allow_updates' => 1,
+			'smart_author_mapping' => 0,
 			'categories' => array(),
 			'field_map' => array(
 				array(
@@ -109,6 +113,7 @@ class FPTestCore extends WP_UnitTestCase {
 	 * Create a simple feed with no config
 	 *
 	 * @param $title
+	 * @since 0.1.5
 	 * @return int|WP_Error
 	 */
 	private function _createSourceFeed( $title ) {
@@ -129,16 +134,21 @@ class FPTestCore extends WP_UnitTestCase {
 	/**
 	 * Setup an existing feed
 	 *
-	 * @param $feed_id
-	 * @param $args
+	 * @param int $feed_id
+	 * @param array $args
+	 * @param array $overwrites
+	 * @since 0.1.5
 	 */
-	private function _setupSourceFeed( $feed_id, $args ) {
+	private function _setupSourceFeed( $feed_id, $args, $overwrites = array() ) {
+
+		$args = wp_parse_args( $overwrites, $args );
 
 		update_post_meta( $feed_id, 'fp_feed_url', sanitize_text_field( $args['feed_url'] ) );
 		update_post_meta( $feed_id, 'fp_post_status', sanitize_text_field( $args['feed_post_status'] ) );
 		update_post_meta( $feed_id, 'fp_posts_xpath', sanitize_text_field( $args['posts_xpath'] ) );
 		update_post_meta( $feed_id, 'fp_post_type', sanitize_text_field( $args['feed_post_type'] ) );
 		update_post_meta( $feed_id, 'fp_allow_updates', absint( $args['allow_updates'] ) );
+		update_post_meta( $feed_id, 'fp_smart_author_mapping', absint( $args['smart_author_mapping'] ) );
 		update_post_meta( $feed_id, 'fp_new_post_categories', array_map( 'absint', $args['categories'] ) );
 
 		// Dont bother sanitizing field map for this
@@ -148,6 +158,8 @@ class FPTestCore extends WP_UnitTestCase {
 
 	/**
 	 * Test creating a feed. Pretty much a sanity check
+	 *
+	 * @since 0.1.5
 	 */
 	public function testCreateSourceFeeds() {
 
@@ -158,6 +170,11 @@ class FPTestCore extends WP_UnitTestCase {
 		}
 	}
 
+	/**
+	 * Test mapping something to post meta
+	 *
+	 * @since 0.1.5
+	 */
 	public function testPostMeta() {
 		$feed_id = $this->_createSourceFeed( 'qz.xml' );
 		$this->_setupSourceFeed( $feed_id, $this->feeds['qz.xml'] );
@@ -173,7 +190,7 @@ class FPTestCore extends WP_UnitTestCase {
 		// Grab some posts
 		$args = array(
 			'post_type' => 'post',
-			'posts_per_page' => 5,
+			'posts_per_page' => 50,
 			'no_found_rows' => true,
 			'cache_results' => false,
 			'meta_key' => 'fp_syndicated_post',
@@ -193,15 +210,96 @@ class FPTestCore extends WP_UnitTestCase {
 			}
 		}
 
-		$this->assertEquals( $meta_found, 5 );
+		$this->assertEquals( $meta_found, 12 );
 	}
 
-	public function testAuthorMapping() {
+	/**
+	 * Make sure authors map correctly without smart mapping
+	 *
+	 * @since 0.1.5
+	 */
+	public function testAuthorMappingNotSmart() {
+		$feed_id = $this->_createSourceFeed( 'qz.xml' );
+		$this->_setupSourceFeed( $feed_id, $this->feeds['qz.xml'] );
 
+		$first_pull = new FP_Pull();
+
+		// Make sure our pull resulted in no errors or warnings
+		$errors = $first_pull->get_log_messages_by_type( $feed_id, 'error' );
+		$this->assertTrue( empty( $errors ) );
+		$warnings = $first_pull->get_log_messages_by_type( $feed_id, 'warning' );
+		$this->assertTrue( empty( $warnings ) );
+
+		// There is one post with author ID 2, but since that user does not exist,
+		// it should map to author 1
+		$args = array(
+			'post_type' => 'post',
+			'posts_per_page' => 50,
+			'no_found_rows' => true,
+			'cache_results' => false,
+			'meta_key' => 'fp_syndicated_post',
+			'meta_value' => 1,
+			'author' => 1,
+		);
+
+		$query = new WP_Query( $args );
+
+		$this->assertEquals( count( $query->posts ), 4 );
+	}
+
+	/**
+	 * Make sure authors map correctly with smart mapping
+	 *
+	 * @since 0.1.5
+	 */
+	public function testAuthorMappingSmart() {
+		wp_create_user( 'testuser', 'sdf$erdf13', 'testuser@testuser.com' );
+
+
+		$feed_id = $this->_createSourceFeed( 'qz.xml' );
+		$this->_setupSourceFeed( $feed_id, $this->feeds['qz.xml'], array( 'smart_author_mapping' => 1 ) );
+
+		$first_pull = new FP_Pull();
+
+		// Make sure our pull resulted in no errors or warnings
+		$errors = $first_pull->get_log_messages_by_type( $feed_id, 'error' );
+		$this->assertTrue( empty( $errors ) );
+		$warnings = $first_pull->get_log_messages_by_type( $feed_id, 'warning' );
+		$this->assertTrue( empty( $warnings ) );
+
+		$args = array(
+			'post_type' => 'post',
+			'posts_per_page' => 50,
+			'no_found_rows' => true,
+			'cache_results' => false,
+			'meta_key' => 'fp_syndicated_post',
+			'meta_value' => 1,
+			'author' => 1,
+		);
+
+		$query = new WP_Query( $args );
+
+		$this->assertEquals( count( $query->posts ), 4 );
+
+		$args = array(
+			'post_type' => 'post',
+			'posts_per_page' => 50,
+			'no_found_rows' => true,
+			'cache_results' => false,
+			'meta_key' => 'fp_syndicated_post',
+			'meta_value' => 1,
+			'author' => 2,
+		);
+
+		$query = new WP_Query( $args );
+
+		$this->assertEquals( count( $query->posts ), 2 );
 	}
 
 	/**
 	 * Test a broken feed
+	 *
+	 * @since 0.1.5
 	 */
 	public function testBrokenFeedPull() {
 		$feed_id = $this->_createSourceFeed( 'broken.com' );
@@ -216,6 +314,8 @@ class FPTestCore extends WP_UnitTestCase {
 
 	/**
 	 * Test pulling live feed from WP.org
+	 *
+	 * @since 0.1.5
 	 */
 	public function testLiveFeedPull() {
 		global $wpdb;
@@ -256,6 +356,8 @@ class FPTestCore extends WP_UnitTestCase {
 
 	/**
 	 *  Test that nothing happens when pulling is off
+	 *
+	 * @since 0.1.5
 	 */
 	public function testDisabledPull() {
 		$feed_id = $this->_createSourceFeed( 'WP.org' );
