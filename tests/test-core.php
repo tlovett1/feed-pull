@@ -14,7 +14,6 @@ class FPTestCore extends WP_UnitTestCase {
 			'feed_post_status' => 'publish',
 			'posts_xpath' => 'channel/item',
 			'feed_post_type' => 'post',
-			'smart_author_mapping' => 0,
 			'allow_updates' => 1,
 			'categories' => array(),
 			'field_map' => array(
@@ -50,7 +49,6 @@ class FPTestCore extends WP_UnitTestCase {
 			'feed_post_status' => 'publish',
 			'posts_xpath' => 'channel/item',
 			'feed_post_type' => 'post',
-			'smart_author_mapping' => 0,
 			'allow_updates' => 1,
 			'categories' => array( 1 ),
 			'field_map' => array(
@@ -67,7 +65,6 @@ class FPTestCore extends WP_UnitTestCase {
 			'posts_xpath' => 'channel/item',
 			'feed_post_type' => 'post',
 			'allow_updates' => 1,
-			'smart_author_mapping' => 0,
 			'categories' => array(),
 			'field_map' => array(
 				array(
@@ -148,7 +145,6 @@ class FPTestCore extends WP_UnitTestCase {
 		update_post_meta( $feed_id, 'fp_posts_xpath', sanitize_text_field( $args['posts_xpath'] ) );
 		update_post_meta( $feed_id, 'fp_post_type', sanitize_text_field( $args['feed_post_type'] ) );
 		update_post_meta( $feed_id, 'fp_allow_updates', absint( $args['allow_updates'] ) );
-		update_post_meta( $feed_id, 'fp_smart_author_mapping', absint( $args['smart_author_mapping'] ) );
 		update_post_meta( $feed_id, 'fp_new_post_categories', array_map( 'absint', $args['categories'] ) );
 
 		// Dont bother sanitizing field map for this
@@ -214,11 +210,83 @@ class FPTestCore extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test functionality that auto adds new posts to certain categories
+	 *
+	 * @since 0.1.5
+	 */
+	public function testCategoryMapping() {
+		$cat1 = wp_create_category( 'First Category' );
+		$cat2 = wp_create_category( 'Second Category' );
+		$cat3 = wp_create_category( 'Third Category' );
+		$cat4 = wp_create_category( 'Fourth Category' );
+
+		$cats = array( $cat1, $cat2, $cat3 );
+
+		$feed_id = $this->_createSourceFeed( 'qz.xml' );
+		$this->_setupSourceFeed( $feed_id, $this->feeds['qz.xml'], array( 'categories' => $cats ) );
+
+		$first_pull = new FP_Pull();
+
+		// Make sure our pull resulted in no errors or warnings
+		$errors = $first_pull->get_log_messages_by_type( $feed_id, 'error' );
+		$this->assertTrue( empty( $errors ) );
+		$warnings = $first_pull->get_log_messages_by_type( $feed_id, 'warning' );
+		$this->assertTrue( empty( $warnings ) );
+
+		// Check first category
+		$args = array(
+			'post_type' => 'post',
+			'posts_per_page' => 50,
+			'no_found_rows' => true,
+			'cache_results' => false,
+			'meta_key' => 'fp_syndicated_post',
+			'meta_value' => 1,
+			'cat' => $cat1,
+		);
+
+		$query = new WP_Query( $args );
+
+		$this->assertEquals( count( $query->posts ), 12 );
+
+		// Check second category
+		$args = array(
+			'post_type' => 'post',
+			'posts_per_page' => 50,
+			'no_found_rows' => true,
+			'cache_results' => false,
+			'meta_key' => 'fp_syndicated_post',
+			'meta_value' => 1,
+			'cat' => $cat2,
+		);
+
+		$query = new WP_Query( $args );
+
+		$this->assertEquals( count( $query->posts ), 12 );
+
+		// Check third category
+		$args = array(
+			'post_type' => 'post',
+			'posts_per_page' => 50,
+			'no_found_rows' => true,
+			'cache_results' => false,
+			'meta_key' => 'fp_syndicated_post',
+			'meta_value' => 1,
+			'cat' => $cat3,
+		);
+
+		$query = new WP_Query( $args );
+
+		$this->assertEquals( count( $query->posts ), 12 );
+	}
+
+	/**
 	 * Make sure authors map correctly without smart mapping
 	 *
 	 * @since 0.1.5
 	 */
-	public function testAuthorMappingNotSmart() {
+	public function testAuthorMapping() {
+		wp_create_user( 'testuser', 'df#dfgdW45', 'testuser@testuser.com' );
+
 		$feed_id = $this->_createSourceFeed( 'qz.xml' );
 		$this->_setupSourceFeed( $feed_id, $this->feeds['qz.xml'] );
 
@@ -244,42 +312,7 @@ class FPTestCore extends WP_UnitTestCase {
 
 		$query = new WP_Query( $args );
 
-		$this->assertEquals( count( $query->posts ), 4 );
-	}
-
-	/**
-	 * Make sure authors map correctly with smart mapping
-	 *
-	 * @since 0.1.5
-	 */
-	public function testAuthorMappingSmart() {
-		wp_create_user( 'testuser', 'sdf$erdf13', 'testuser@testuser.com' );
-
-
-		$feed_id = $this->_createSourceFeed( 'qz.xml' );
-		$this->_setupSourceFeed( $feed_id, $this->feeds['qz.xml'], array( 'smart_author_mapping' => 1 ) );
-
-		$first_pull = new FP_Pull();
-
-		// Make sure our pull resulted in no errors or warnings
-		$errors = $first_pull->get_log_messages_by_type( $feed_id, 'error' );
-		$this->assertTrue( empty( $errors ) );
-		$warnings = $first_pull->get_log_messages_by_type( $feed_id, 'warning' );
-		$this->assertTrue( empty( $warnings ) );
-
-		$args = array(
-			'post_type' => 'post',
-			'posts_per_page' => 50,
-			'no_found_rows' => true,
-			'cache_results' => false,
-			'meta_key' => 'fp_syndicated_post',
-			'meta_value' => 1,
-			'author' => 1,
-		);
-
-		$query = new WP_Query( $args );
-
-		$this->assertEquals( count( $query->posts ), 4 );
+		$this->assertEquals( count( $query->posts ), 5 );
 
 		$args = array(
 			'post_type' => 'post',
@@ -293,7 +326,7 @@ class FPTestCore extends WP_UnitTestCase {
 
 		$query = new WP_Query( $args );
 
-		$this->assertEquals( count( $query->posts ), 2 );
+		$this->assertEquals( count( $query->posts ), 3 );
 	}
 
 	/**

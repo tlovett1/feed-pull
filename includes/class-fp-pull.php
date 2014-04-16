@@ -278,21 +278,10 @@ class FP_Pull {
 					}
 				}
 
-				// Handle smart author mapping
-				if ( ! empty( $new_post_args['post_author'] ) && ! empty( $smart_author_mapping ) ) {
-
-					if ( ! is_numeric( $new_post_args['post_author'] ) ) {
-						// if we have an author that is not an ID, let's try to lookup the author
-
-						if ( is_email(  $new_post_args['post_author'] ) ) {
-							$user = get_user_by( 'email', $new_post_args['post_author'] );
-						} else {
-							$user = get_user_by( 'login', $new_post_args['post_author'] );
-
-							if ( ! $user ) {
-								$user = get_user_by( 'slug', $new_post_args['post_author'] );
-							}
-						}
+				// Handle author mapping
+				if ( ! empty( $new_post_args['post_author'] ) ) {
+					if ( apply_filters( 'fp_post_author_id_lookup', true, $new_post_args['post_author'], $post, $source_feed_id ) && ! is_numeric( $new_post_args['post_author'] ) ) {
+						$user = get_user_by( 'login', $new_post_args['post_author'] );
 
 						if ( $user ) {
 							$new_post_args['post_author'] = $user->ID;

@@ -248,20 +248,6 @@ class FP_Source_Feed_CPT {
 			</select>
 		</p>
 
-		<p>
-			<label for="fp_smart_author_mapping"><?php _e( 'Smart Author Mapping:', 'feed-pull' ); ?></label>
-			<select type="text" id="fp_smart_author_mapping" name="fp_smart_author_mapping">
-				<option  value="0"><?php _e( 'No', 'feed-pull' ); ?></option>
-				<option <?php selected( $smart_author_mapping, 1 ); ?> value="1"><?php _e( 'Yes', 'feed-pull' ); ?></option>
-			</select>
-			<div class="field-description">
-				<?php _e( 'When smart author mapping is turned on, a field mapped to post_author will be handled like so: An integer will be treated as an
-				author ID; if the author ID matches an existing author, the post will be attributed to that author. A string will be treated as a
-				username, email, or nicename; if the username, email, or nicename exists as a user the post will be attributed to that author, otherwise the post will be
-				attributed to the current user.', 'feed-pull' ); ?>
-			</div>
-		</p>
-
 		<?php $cats = get_categories( array( 'hide_empty' => 0 ) ); ?>
 		<p>
 			<label for="fp_new_post_categories"><?php _e( 'Automatically Add New Posts to Categories:', 'feed-pull' ); ?></label>
@@ -441,12 +427,6 @@ class FP_Source_Feed_CPT {
 				update_post_meta( $post_id, 'fp_allow_updates', absint( $_POST['fp_allow_updates'] ) );
 			} else {
 				delete_post_meta( $post_id, 'fp_allow_updates' );
-			}
-
-			if ( ! empty( $_POST['fp_smart_author_mapping'] ) ) {
-				update_post_meta( $post_id, 'fp_smart_author_mapping', absint( $_POST['fp_smart_author_mapping'] ) );
-			} else {
-				delete_post_meta( $post_id, 'fp_smart_author_mapping' );
 			}
 
 			if ( ! empty( $_POST['fp_new_post_categories'] ) ) {
