@@ -52,6 +52,11 @@ permalink that you can map to the post GUID. GUID's allow the plugin to determin
 been syndicated or not.
 
 == Changelog ==
+= 0.1.5 =
+Custom namespacing
+Unit tests
+Random bug fixes
+
 = 0.1.4 =
 Fix post guid lookup
 

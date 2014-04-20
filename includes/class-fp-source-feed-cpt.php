@@ -45,7 +45,12 @@ class FP_Source_Feed_CPT {
 			}
 
 			wp_enqueue_script( 'fp-post-admin', plugins_url( $js_path, dirname( __FILE__ ) ), array( 'jquery', 'underscore' ), '1.0', true );
-			wp_localize_script( 'fp-post-admin', 'FP_Settings', array( 'nonce' => wp_create_nonce( 'fp_pull_nonce' ) ) );
+			wp_localize_script( 'fp-post-admin', 'FP_Settings', array(
+				'pull_nonce' => wp_create_nonce( 'fp_pull_nonce' ),
+				'get_namespaces_nonce' => wp_create_nonce( 'fp_get_namespaces_nonce' ),
+				'prefixed_root_namespace' => __( 'Define custom namespaces for use in XPath queries. This is totally optional and probably not necessary for most feeds.', 'feed-pull' ),
+				'unprefixed_root_namespace' => __( "Usually custom namespaces don't need to be defined, however your feed contains a document level unprefixed namespace which doesn't work well with XPath. You should define a namespace and prefix all your XPath queries with it. For example instead of //feed/entry, use //default:feed/default:entry. Your custom namespace should be automatically defined below.", 'feed-pull' )
+			) );
 
 			wp_enqueue_style( 'fp-post-admin', plugins_url( $css_path, dirname( __FILE__ ) ) );
 		}
@@ -190,6 +195,16 @@ class FP_Source_Feed_CPT {
 		if ( ! empty( $posts_xpath ) )
 			$posts_xpath = esc_attr( $posts_xpath );
 
+		$namespace_prefix = get_post_meta( $post->ID, 'fp_namespace_prefix', true );
+		if ( ! empty( $namespace_prefix ) )
+			$namespace_prefix = esc_attr( $namespace_prefix );
+
+		$namespace_url = get_post_meta( $post->ID, 'fp_namespace_url', true );
+		if ( ! empty( $namespace_url ) )
+			$namespace_url = esc_url( $namespace_url );
+
+		$custom_namespaces = get_post_meta( $post->ID, 'fp_custom_namespaces', true );
+
 	?>
 		<p><em><?php _e( 'Tell us about the feed from which we are pulling.', 'feed-pull' ); ?></em></p>
 		<p>
@@ -199,6 +214,52 @@ class FP_Source_Feed_CPT {
 			<label for="fp_posts_xpath"><?php _e( 'XPath to Posts:', 'feed-pull' ); ?></label> <input class="regular-text" type="text" id="fp_posts_xpath" name="fp_posts_xpath" value="<?php echo $posts_xpath; ?>" />
 			<?php _e( '(i.e. channel/item)', 'feed-pull' ); ?>
 		</p>
+
+		<p>
+			<?php _e( 'Custom Namespaces:', 'feed-pull' ); ?>
+		</p>
+		<p class="custom-namespaces-description"><?php _e( 'Define custom namespaces for use in XPath queries. This is totally optional and probably not necessary for most feeds.', 'feed-pull' ); ?></p>
+		<table cellpadding="0" cellspacing="0" <?php if ( empty( $custom_namespaces ) ) : ?>class="hide"<?php endif; ?>>
+			<thead>
+			<tr>
+				<th><?php _e( 'Namespace Prefix', 'feed-pull' ); ?></th>
+				<th><?php _e( 'Namespace URL', 'feed-pull' ); ?></th>
+				<th class="action"></th>
+			</tr>
+			</thead>
+			<tbody>
+			<?php if ( ! empty( $custom_namespaces ) ) : foreach ( $custom_namespaces as $row_id => $namespace ) : ?>
+				<tr data-namespace-row-id="<?php echo (int) $row_id; ?>">
+					<td>
+						<input type="text" name="fp_custom_namespaces[<?php echo (int) $row_id; ?>][namespace_prefix]" value="<?php if ( ! empty( $namespace['namespace_prefix'] ) ) echo esc_attr( $namespace['namespace_prefix'] ); ?>">
+					</td>
+					<td>
+						<input type="text" name="fp_custom_namespaces[<?php echo (int) $row_id; ?>][namespace_url]" value="<?php if ( ! empty( $namespace['namespace_url'] ) ) echo esc_url( $namespace['namespace_url'] ); ?>">
+					</td>
+					<td class="action">
+						<input type="button" class="button delete" value="<?php _e( 'Delete', 'feed-pull' ); ?>">
+					</td>
+				</tr>
+			<?php endforeach; endif; ?>
+			</tbody>
+		</table>
+		<p>
+			<input type="button" class="add-new button" value="<?php _e( 'Add Custom Namespace', 'feed-pull' ); ?>">
+		</p>
+
+		<script type="text/underscores" id='namespace-row-template'>
+			<tr data-namespace-row-id="<%- rowID %>">
+				<td>
+					<input type="text" name="fp_custom_namespaces[<%- rowID %>][namespace_prefix]" value="<%- namespace_prefix %>">
+				</td>
+				<td>
+					<input type="text" name="fp_custom_namespaces[<%- rowID %>][namespace_url]" value="<%- namespace_url %>">
+				</td>
+				<td class="action">
+					<input type="button" value="<?php _e( 'Delete', 'feed-pull' ); ?>" class="button delete">
+				</td>
+			</tr>
+		</script>
 	<?php
 	}
 
@@ -407,6 +468,25 @@ class FP_Source_Feed_CPT {
 				update_post_meta( $post_id, 'fp_posts_xpath', sanitize_text_field( $_POST['fp_posts_xpath'] ) );
 			} else {
 				delete_post_meta( $post_id, 'fp_posts_xpath' );
+			}
+
+			if ( ! empty( $_POST['fp_custom_namespaces'] ) ) {
+				$custom_namespaces = array();
+
+				foreach ( $_POST['fp_custom_namespaces'] as $row_id => $namespace ) {
+					$new_namespace = array();
+
+					$new_namespace['namespace_prefix'] = sanitize_text_field( $namespace['namespace_prefix'] );
+					$new_namespace['namespace_url'] = esc_url_raw( $namespace['namespace_url'] );
+
+					$custom_namespaces[] = $new_namespace;
+				}
+
+				if ( ! empty( $custom_namespaces ) ) {
+					update_post_meta( $post_id, 'fp_custom_namespaces', $custom_namespaces );
+				}
+			} else {
+				delete_post_meta( $post_id, 'fp_custom_namespaces' );
 			}
 		}
 

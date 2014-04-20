@@ -31,6 +31,12 @@
 	}
 }
 
+#fp_source_details {
+	.custom-namespaces-description {
+		font-style: italic;
+	}
+}
+
 #fp_log {
 	ul {
 		.status {
@@ -65,7 +71,18 @@
 		font-size: 12px;
 	}
 
+	.button-wrapper {
+		padding-right: .3em;
+		margin-top: .3em;
+	}
+}
+
+#fp_field_mapping, #fp_source_details {
 	table {
+		&.hide {
+			display: none;
+		}
+
 		width: 100%;
 		font-size: inherit;
 
@@ -84,11 +101,5 @@
 				text-align: right;
 			}
 		}
-	}
-
-	.button-wrapper {
-		text-align: right;
-		padding-right: .3em;
-		margin-top: .3em;
 	}
 }

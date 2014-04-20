@@ -14,6 +14,33 @@ class FP_AJAX {
 	 */
 	private function __construct() {
 		add_action( 'wp_ajax_pull', array( $this, 'action_pull' ) );
+		add_action( 'wp_ajax_get_namespaces', array( $this, 'action_get_namespaces' ) );
+	}
+
+	/**
+	 * Get document level namespaces
+	 *
+	 * @since 0.1.5
+	 * @return void
+	 */
+	public function action_get_namespaces() {
+		$output = array();
+		$output['success'] = false;
+
+		if ( ! empty( $_POST['feed_url'] ) && check_ajax_referer( 'fp_get_namespaces_nonce', 'nonce', false ) ) {
+			$raw_feed_contents = fp_fetch_feed( $_POST['feed_url'] );
+
+			if ( ! is_wp_error( $raw_feed_contents ) ) {
+				$feed = simplexml_load_string( $raw_feed_contents );
+
+				$namespaces = $feed->getDocNamespaces();
+
+				$output['namespaces'] = $namespaces;
+				$output['success'] = true;
+			}
+		}
+
+		wp_send_json( $output );
 	}
 
 	/**

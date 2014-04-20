@@ -99,6 +99,23 @@ class FP_Pull {
 	}
 
 	/**
+	 * Setup namespaces for SimpleXMLElement for next XPath query
+	 *
+	 * @param $feed
+	 * @param $custom_namespaces
+	 * @return SimpleXMLElement
+	 */
+	public function setupCustomNamespaces( &$feed, $custom_namespaces ) {
+		if ( ! empty( $custom_namespaces ) && is_array( $custom_namespaces ) ) {
+			foreach ( $custom_namespaces as $namespace ) {
+				$feed->registerXPathNamespace( esc_attr( $namespace['namespace_prefix'] ), esc_url_raw( $namespace['namespace_url'] ) );
+			}
+		}
+
+		return $feed;
+	}
+
+	/**
 	 * Handle feed logging
 	 *
 	 * @param $source_feed_id
@@ -162,7 +179,10 @@ class FP_Pull {
 			$new_post_type = get_post_meta( $source_feed_id, 'fp_post_type', true );
 			$allow_updates = get_post_meta( $source_feed_id, 'fp_allow_updates', true );
 			$post_categories = get_post_meta( $source_feed_id, 'fp_new_post_categories', true );
-			$smart_author_mapping = get_post_meta( $source_feed_id, 'fp_smart_author_mapping', true );
+			$custom_namespaces = get_post_meta( $source_feed_id, 'fp_custom_namespaces', true );
+
+			// Provide some extra control for custom namespaces
+			$custom_namespaces = apply_filters( 'fp_custom_namespaces', $custom_namespaces, $source_feed_id );
 
 			if ( empty( $posts_xpath ) ) {
 				$this->log( __( 'No xpath to post items', 'feed-pull' ), $source_feed_id, 'error' );
@@ -182,7 +202,7 @@ class FP_Pull {
 				continue;
 			}
 
-			$raw_feed_contents = $this->fetch_feed( $feed_url );
+			$raw_feed_contents = fp_fetch_feed( $feed_url );
 
 			if ( is_wp_error( $raw_feed_contents ) ) {
 				$this->log( __( 'Could not fetch feed', 'feed-pull' ), $source_feed_id, 'error' );
@@ -198,6 +218,8 @@ class FP_Pull {
 				$this->handle_feed_log( $source_feed_id );
 				continue;
 			}
+
+			$this->setupCustomNamespaces( $feed, $custom_namespaces );
 
 			$posts = $feed->xpath( $posts_xpath );
 
@@ -223,6 +245,8 @@ class FP_Pull {
 					if ( 'post_meta' == $field['mapping_type'] ) {
 						$meta_fields[] = $field;
 					} else {
+						$this->setupCustomNamespaces( $post, $custom_namespaces );
+
 						$values = $post->xpath( $field['source_field'] );
 
 						if ( empty( $values ) ) {
@@ -324,6 +348,8 @@ class FP_Pull {
 					}
 
 					foreach ( $meta_fields as $field ) {
+						$this->setupCustomNamespaces( $post, $custom_namespaces );
+
 						$values = $post->xpath( $field['source_field'] );
 
 						if ( empty( $values ) ) {
@@ -346,42 +372,42 @@ class FP_Pull {
 
 		wp_reset_postdata();
 	}
+}
 
-	/**
-	 * Get contents of feed file
-	 *
-	 * @param $url_or_path
-	 * @since 0.1.0
-	 * @return array|string|WP_Error
-	 */
-	private function fetch_feed( $url_or_path ) {
-		if ( ! preg_match( '#^https?://#i', $url_or_path ) ) {
-			// if we have an absolute path, we can just use fopen. This is really only for unit testing
+/**
+ * Get contents of feed file
+ *
+ * @param $url_or_path
+ * @since 0.1.5
+ * @return array|string|WP_Error
+ */
+function fp_fetch_feed( $url_or_path ) {
+	if ( ! preg_match( '#^https?://#i', $url_or_path ) ) {
+		// if we have an absolute path, we can just use fopen. This is really only for unit testing
 
-			$file_handle = @fopen( $url_or_path, 'r' );
+		$file_handle = @fopen( $url_or_path, 'r' );
 
-			if ( ! $file_handle ) {
-				return new WP_Error( 'fp_bad_feed_path', __( 'Could not read contents of feed path', 'feed-pull' ) );
-			}
-
-			$file_contents = '';
-
-			while ( ! feof( $file_handle ) ) {
-				$file_contents .= fgets( $file_handle );
-			}
-
-			fclose( $file_handle );
-
-			return $file_contents;
-
-		} else {
-			$request = wp_remote_get( $url_or_path );
-
-			if ( is_wp_error( $request ) ) {
-				return $request;
-			}
-
-			return wp_remote_retrieve_body( $request );
+		if ( ! $file_handle ) {
+			return new WP_Error( 'fp_bad_feed_path', __( 'Could not read contents of feed path', 'feed-pull' ) );
 		}
+
+		$file_contents = '';
+
+		while ( ! feof( $file_handle ) ) {
+			$file_contents .= fgets( $file_handle );
+		}
+
+		fclose( $file_handle );
+
+		return $file_contents;
+
+	} else {
+		$request = wp_remote_get( $url_or_path );
+
+		if ( is_wp_error( $request ) ) {
+			return $request;
+		}
+
+		return wp_remote_retrieve_body( $request );
 	}
 }

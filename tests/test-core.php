@@ -16,6 +16,7 @@ class FPTestCore extends WP_UnitTestCase {
 			'feed_post_type' => 'post',
 			'allow_updates' => 1,
 			'categories' => array(),
+			'custom_namespaces' => array(),
 			'field_map' => array(
 				array(
 					'source_field' => 'title',
@@ -51,6 +52,7 @@ class FPTestCore extends WP_UnitTestCase {
 			'feed_post_type' => 'post',
 			'allow_updates' => 1,
 			'categories' => array( 1 ),
+			'custom_namespaces' => array(),
 			'field_map' => array(
 				array(
 					'source_field' => 'name',
@@ -66,6 +68,7 @@ class FPTestCore extends WP_UnitTestCase {
 			'feed_post_type' => 'post',
 			'allow_updates' => 1,
 			'categories' => array(),
+			'custom_namespaces' => array(),
 			'field_map' => array(
 				array(
 					'source_field' => 'title',
@@ -84,7 +87,7 @@ class FPTestCore extends WP_UnitTestCase {
 				),
 				array(
 					'source_field' => 'description',
-					'destination_field' => 'excerpt',
+					'destination_field' => 'post_excerpt',
 					'mapping_type' => 'post_field',
 				),
 				array(
@@ -103,6 +106,51 @@ class FPTestCore extends WP_UnitTestCase {
 					'mapping_type' => 'post_meta',
 				)
 			)
+		),
+		'atom.xml' => array(
+			'feed_url' => 'tests/xml/atom.xml',
+			'feed_post_status' => 'publish',
+			'posts_xpath' => '//default:feed/default:entry',
+			'feed_post_type' => 'post',
+			'allow_updates' => 1,
+			'categories' => array(),
+			'custom_namespaces' => array(
+				array(
+					'namespace_prefix' => 'default',
+					'namespace_url' => 'http://www.w3.org/2005/Atom',
+				),
+				array(
+					'namespace_prefix' => 'broken',
+					'namespace_url' => 'http://www.google.com',
+				),
+			),
+			'field_map' => array(
+				array(
+					'source_field' => 'default:title',
+					'destination_field' => 'post_title',
+					'mapping_type' => 'post_field',
+				),
+				array(
+					'source_field' => 'default:id',
+					'destination_field' => 'guid',
+					'mapping_type' => 'post_field',
+				),
+				array(
+					'source_field' => 'default:published',
+					'destination_field' => 'pubDate',
+					'mapping_type' => 'post_field',
+				),
+				array(
+					'source_field' => 'default:title',
+					'destination_field' => 'original_title',
+					'mapping_type' => 'post_meta',
+				),
+				array(
+					'source_field' => 'default:summary',
+					'destination_field' => 'ppst_excerpt',
+					'mapping_type' => 'post_field',
+				),
+			),
 		),
 	);
 
@@ -149,6 +197,9 @@ class FPTestCore extends WP_UnitTestCase {
 
 		// Dont bother sanitizing field map for this
 		update_post_meta( $feed_id, 'fp_field_map', $args['field_map'] );
+
+		// Dont bother sanitizing namespaces for this
+		update_post_meta( $feed_id, 'fp_custom_namespaces', $args['custom_namespaces'] );
 
 	}
 
@@ -385,6 +436,146 @@ class FPTestCore extends WP_UnitTestCase {
 		$this->assertTrue( ! empty( $last_pull_time ) );
 		$this->assertTrue( ! empty( $last_pull_log ) );
 
+	}
+
+	/**
+	 * Test pulling posts into a CPT
+	 *
+	 * @since 0.1.5
+	 */
+	public function testCustomPostTypePull() {
+		register_post_type( 'fp_test_post_type' );
+
+		$feed_id = $this->_createSourceFeed( 'qz.xml' );
+		$this->_setupSourceFeed( $feed_id, $this->feeds['qz.xml'], array( 'feed_post_type' => 'fp_test_post_type' ) );
+
+		$first_pull = new FP_Pull();
+
+		// Make sure our pull resulted in no errors or warnings
+		$errors = $first_pull->get_log_messages_by_type( $feed_id, 'error' );
+		$this->assertTrue( empty( $errors ) );
+		$warnings = $first_pull->get_log_messages_by_type( $feed_id, 'warning' );
+		$this->assertTrue( empty( $warnings ) );
+
+		// Grab some posts
+		$args = array(
+			'post_type' => 'fp_test_post_type',
+			'posts_per_page' => 50,
+			'no_found_rows' => true,
+			'cache_results' => false,
+			'meta_key' => 'fp_syndicated_post',
+			'meta_value' => 1,
+		);
+
+		$query = new WP_Query( $args );
+
+		$this->assertEquals( count( $query->posts ), 12 );
+	}
+
+	/**
+	 * Test atom feed pull
+	 *
+	 * @aince 0.1.5
+	 */
+	public function testAtomPull() {
+		$feed_id = $this->_createSourceFeed( 'atom.xml' );
+		$this->_setupSourceFeed( $feed_id, $this->feeds['atom.xml'] );
+
+		$first_pull = new FP_Pull();
+
+		// Make sure our pull resulted in no errors or warnings
+		$errors = $first_pull->get_log_messages_by_type( $feed_id, 'error' );
+		$this->assertTrue( empty( $errors ) );
+		$warnings = $first_pull->get_log_messages_by_type( $feed_id, 'warning' );
+		$this->assertTrue( empty( $warnings ) );
+
+		// Grab some posts
+		$args = array(
+			'post_type' => 'post',
+			'posts_per_page' => 50,
+			'no_found_rows' => true,
+			'cache_results' => false,
+			'meta_key' => 'fp_syndicated_post',
+			'meta_value' => 1,
+		);
+
+		$query = new WP_Query( $args );
+
+		$this->assertEquals( count( $query->posts ), 10 );
+
+		/**
+		 * Check updates for Atom feed
+		 */
+		$second_pull = new FP_Pull();
+
+		// Make sure our pull resulted in no errors or warnings
+		$errors = $second_pull->get_log_messages_by_type( $feed_id, 'error' );
+		$this->assertTrue( empty( $errors ) );
+		$warnings = $second_pull->get_log_messages_by_type( $feed_id, 'warning' );
+		$this->assertTrue( empty( $warnings ) );
+
+		$query = new WP_Query( $args );
+
+		$this->assertEquals( count( $query->posts ), 10 );
+
+		/**
+		 * Check post meta for atom feed
+		 */
+		while ( $query->have_posts() ) {
+			$query->the_post();
+
+			$original_title = get_post_meta( get_the_ID(), 'original_title', true );
+			$this->assertTrue( ! empty( $original_title ) );
+		}
+
+		wp_reset_postdata();
+	}
+
+	/**
+	 * Make sure excerpts are filled properly in a pull
+	 *
+	 * @aince 0.1.5
+	 */
+	public function testExcerptContentInPull() {
+		$feed_id = $this->_createSourceFeed( 'qz.xml' );
+		$this->_setupSourceFeed( $feed_id, $this->feeds['qz.xml'] );
+
+		$first_pull = new FP_Pull();
+
+		// Make sure our pull resulted in no errors or warnings
+		$errors = $first_pull->get_log_messages_by_type( $feed_id, 'error' );
+		$this->assertTrue( empty( $errors ) );
+		$warnings = $first_pull->get_log_messages_by_type( $feed_id, 'warning' );
+		$this->assertTrue( empty( $warnings ) );
+
+		// Grab some posts
+		$args = array(
+			'post_type' => 'post',
+			'posts_per_page' => 50,
+			'no_found_rows' => true,
+			'cache_results' => false,
+			'meta_key' => 'fp_syndicated_post',
+			'meta_value' => 1,
+		);
+
+		$query = new WP_Query( $args );
+
+		$excerpts_found = 0;
+
+		if ( $query->have_posts() ) {
+			while ( $query->have_posts() ) {
+				global $post;
+				$query->the_post();
+
+				if ( ! empty( $post->post_excerpt ) ) {
+					$excerpts_found++;
+				}
+			}
+		}
+
+		wp_reset_postdata();
+
+		$this->assertEquals( $excerpts_found, 12 );
 	}
 
 	/**
