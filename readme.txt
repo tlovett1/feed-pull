@@ -51,6 +51,19 @@ self-explanatory. A GUID is a unique identifier for posts. Items within your fee
 permalink that you can map to the post GUID. GUID's allow the plugin to determine if a piece of content has already
 been syndicated or not.
 
+= Atom Feeds and Custom Namespaces =
+Sometimes feeds make use of prefixes on certain elements. This happens for a variety of reasons; one is to avoid
+conflicts. Prefixes should have a namespace defined somewhere using an "xmlns" attribute. Feed Pull lets you
+define custom namespaces. This feature is advanced and not needed in most cases.
+
+However, certain feeds, like the Atom feeds outputted by WordPress define a document level namespace without a
+prefix. This is totally fine except it makes XPath queries difficult. Feed Pull should automatically detect if
+this situation is happening and create a namespace with the prefix "default" and the url "http://www.w3.org/2005/Atom".
+You should use the prefix in your XPath queries. For example, instead of "//feed/entry", your query should be
+"//default:feed/default:entry". Instead of "title" in your field map, your query should probably be "default:title".
+
+You can learn more about namespaces here: [http://www.w3schools.com/xml/xml_namespaces.asp](http://www.w3schools.com/xml/xml_namespaces.asp)
+
 == Changelog ==
 = 0.1.5 =
 Custom namespacing
