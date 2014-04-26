@@ -251,10 +251,18 @@ class FP_Pull {
 
 						if ( empty( $values ) ) {
 							$this->log( sprintf( __( 'Xpath to source field returns nothing for %s', 'feed-pull' ), sanitize_text_field( $field['source_field'] ) ), $source_feed_id, 'warning' );
-						} elseif ( is_array( $values ) && count( $values ) === 1 ) {
-							$new_post_args[$field['destination_field']] = apply_filters( 'fp_pre_post_insert_value', (string) $values[0], $field, $post, $source_feed_id );
 						} else {
-							// Todo: is this possible?
+							if ( count( $values ) > 1 ) {
+								$pre_filter_post_value = array();
+
+								foreach ( $values as $value ) {
+									$pre_filter_post_value[] = (string) $value;
+								}
+							} else {
+								$pre_filter_post_value = (string) $values[0];
+							}
+
+							$new_post_args[$field['destination_field']] = apply_filters( 'fp_pre_post_insert_value', $pre_filter_post_value, $field, $post, $source_feed_id );
 						}
 					}
 				}
@@ -355,7 +363,17 @@ class FP_Pull {
 						if ( empty( $values ) ) {
 							$this->log( sprintf( __( 'Xpath to source field returns nothing for %s', 'feed-pull' ), sanitize_text_field( $field['source_field'] ) ), $source_feed_id, 'warning', $new_post_id );
 						} else {
-							$meta_value = apply_filters( 'fp_pre_post_meta_value', (string) $values[0], $field, $post, $source_feed_id );
+							if ( count( $values ) > 1 ) {
+								$pre_filter_meta_value = array();
+
+								foreach ( $values as $value ) {
+									$pre_filter_meta_value[] = (string) $value;
+								}
+							} else {
+								$pre_filter_meta_value = (string) $values[0];
+							}
+
+							$meta_value = apply_filters( 'fp_pre_post_meta_value', $pre_filter_meta_value, $field, $post, $source_feed_id );
 						}
 
 						// Todo: sanitization?

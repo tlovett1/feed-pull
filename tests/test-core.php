@@ -104,7 +104,12 @@ class FPTestCore extends WP_UnitTestCase {
 					'source_field' => 'link',
 					'destination_field' => 'old_link',
 					'mapping_type' => 'post_meta',
-				)
+				),
+				array(
+					'source_field' => 'category',
+					'destination_field' => 'categories',
+					'mapping_type' => 'post_meta',
+				),
 			)
 		),
 		'atom.xml' => array(
@@ -328,6 +333,52 @@ class FPTestCore extends WP_UnitTestCase {
 		$query = new WP_Query( $args );
 
 		$this->assertEquals( count( $query->posts ), 12 );
+	}
+
+	/**
+	 * Test pulling a group of nodes
+	 *
+	 * @since 0.1.6
+	 */
+	public function testMultipleNodePull() {
+		$feed_id = $this->_createSourceFeed( 'qz.xml' );
+		$this->_setupSourceFeed( $feed_id, $this->feeds['qz.xml'] );
+
+		$first_pull = new FP_Pull();
+
+		// Make sure our pull resulted in no errors or warnings
+		$errors = $first_pull->get_log_messages_by_type( $feed_id, 'error' );
+		$this->assertTrue( empty( $errors ) );
+		$warnings = $first_pull->get_log_messages_by_type( $feed_id, 'warning' );
+		$this->assertTrue( empty( $warnings ) );
+
+		$args = array(
+			'post_type' => 'post',
+			'posts_per_page' => 50,
+			'no_found_rows' => true,
+			'cache_results' => false,
+			'meta_key' => 'fp_syndicated_post',
+			'meta_value' => 1,
+			'author' => 1,
+		);
+
+		$query = new WP_Query( $args );
+
+		$this->assertTrue( $query->have_posts() );
+
+		while ( $query->have_posts() ) {
+			$query->the_post();
+
+			$categories = get_post_meta( get_the_ID(), 'categories', true );
+
+			$this->assertTrue( ( is_array( $categories ) && count( $categories ) >= 2 ) );
+
+			if ( get_the_title() == 'You really need to wear wackier socks to work' ) {
+				$this->assertEquals( count( $categories ), 11 );
+			}
+		}
+
+		wp_reset_postdata();
 	}
 
 	/**
