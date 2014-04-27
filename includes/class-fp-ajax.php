@@ -14,6 +14,7 @@ class FP_AJAX {
 	 */
 	private function __construct() {
 		add_action( 'wp_ajax_pull', array( $this, 'action_pull' ) );
+		add_action( 'wp_ajax_reset_deleted_posts', array( $this, 'action_reset_deleted_posts' ) );
 		add_action( 'wp_ajax_get_namespaces', array( $this, 'action_get_namespaces' ) );
 	}
 
@@ -60,6 +61,24 @@ class FP_AJAX {
 			}
 
 			new FP_Pull( $source_feed_id );
+			$output['success'] = true;
+		}
+
+		wp_send_json( $output );
+	}
+
+	/**
+	 * Reset deleted posts
+	 *
+	 * @since 0.1.7
+	 * @return void
+	 */
+	public function action_reset_deleted_posts() {
+		$output = array();
+		$output['success'] = false;
+
+		if ( check_ajax_referer( 'fp_reset_deleted_posts_nonce', 'nonce', false ) ) {
+			delete_option( FP_DELETED_OPTION_NAME );
 			$output['success'] = true;
 		}
 

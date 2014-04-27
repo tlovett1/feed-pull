@@ -4,7 +4,8 @@ module.exports = function ( grunt ) {
         uglify : {
             js : {
                 files : {
-                    'build/js/post-admin.min.js' : ['js/post-admin.js']
+                    'build/js/post-admin.min.js' : ['js/post-admin.js'],
+                    'build/js/settings-admin.min.js' : ['js/settings-admin.js']
                 }
             }
         },

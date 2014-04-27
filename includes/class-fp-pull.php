@@ -298,7 +298,7 @@ class FP_Pull {
 						$new_post_args['ID'] = $existing_post_id;
 						unset( $new_post_args['guid'] );
 					} else {
-						$this->log( __( 'Post already exists and updates are not allowed.', 'feed-pull' ), $source_feed_id, 'error' );
+						$this->log( __( 'Post already exists and updates are not allowed.', 'feed-pull' ), $source_feed_id, 'warning' );
 						continue;
 					}
 				} else {

@@ -271,6 +271,32 @@ class FPTestCore extends WP_UnitTestCase {
 	}
 
 	/**
+	 * Test post updating when it is not allowed
+	 *
+	 * @since 0.1.7
+	 */
+	public function testPostUpdatesNotAllowed() {
+		$feed_id = $this->_createSourceFeed( 'qz.xml' );
+		$this->_setupSourceFeed( $feed_id, $this->feeds['qz.xml'], array( 'allow_updates' => 0 ) );
+
+		$first_pull = new FP_Pull();
+
+		// Make sure our pull resulted in no errors or warnings
+		$errors = $first_pull->get_log_messages_by_type( $feed_id, 'error' );
+		$this->assertTrue( empty( $errors ) );
+		$warnings = $first_pull->get_log_messages_by_type( $feed_id, 'warning' );
+		$this->assertTrue( empty( $warnings ) );
+
+		$second_pull = new FP_Pull();
+
+		// No pulls should have updated
+		$errors = $second_pull->get_log_messages_by_type( $feed_id, 'error' );
+		$this->assertTrue( empty( $errors ) );
+		$warnings = $second_pull->get_log_messages_by_type( $feed_id, 'warning' );
+		$this->assertEquals( count( $warnings ), 12 );
+	}
+
+	/**
 	 * Test functionality that auto adds new posts to certain categories
 	 *
 	 * @since 0.1.5

@@ -31,7 +31,31 @@ class FP_Feed_Pull {
 		add_action( 'admin_menu', array( $this, 'action_admin_menu' ) );
 		add_action( 'admin_init', array( $this, 'action_admin_init' ) );
 		add_action( 'plugins_loaded', array( $this, 'action_plugins_loaded' ) );
+		add_action( 'admin_enqueue_scripts' , array( $this, 'action_admin_enqueue_scripts' ) );
     }
+
+	/**
+	 * Enqueue settings screen js
+	 *
+	 * @since 0.1.7
+	 */
+	public function action_admin_enqueue_scripts() {
+		global $pagenow;
+
+		if ( 'options-general.php' == $pagenow && ! empty( $_GET['page'] ) && 'feed-pull.php' == $_GET['page'] ) {
+
+			if ( defined( WP_DEBUG ) && WP_DEBUG ) {
+				$js_path = '/js/settings-admin.js';
+			} else {
+				$js_path = '/build/js/settings-admin.min.js';
+			}
+
+			wp_enqueue_script( 'fp-settings-admin', plugins_url( $js_path, dirname( __FILE__ ) ), array( 'jquery' ), '1.0', true );
+			wp_localize_script( 'fp-settings-admin', 'FP_Settings', array(
+				'reset_deleted_posts_nonce' => wp_create_nonce( 'fp_reset_deleted_posts_nonce' ),
+			) );
+		}
+	}
 
 	/**
 	 * Add options page
@@ -40,7 +64,7 @@ class FP_Feed_Pull {
 	 * @return void
 	 */
 	public function action_admin_menu() {
-		add_submenu_page( 'options-general.php', __( 'Feed Pull Settings', 'feed-pull' ), __( 'Feed Pull Settings', 'feed-pull' ), 'manage_options', 'feed-pull.php', array( $this, 'screen_options' ) );
+		add_submenu_page( 'options-general.php', __( 'Feed Pull', 'feed-pull' ), __( 'Feed Pull', 'feed-pull' ), 'manage_options', 'feed-pull.php', array( $this, 'screen_options' ) );
 	}
 
 	/**
@@ -116,6 +140,14 @@ class FP_Feed_Pull {
 									<option value="0"><?php _e( 'No', 'feed-pull' ); ?></option>
 									<option <?php selected( $option['enable_feed_pull'], 1 ); ?> value="1"><?php _e( 'Yes', 'feed-pull' ); ?></option>
 								</select>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="fp_enable_feed_pull"><?php _e( 'Reset deleted syndicated posts:', 'feed-pull' ); ?></label></th>
+							<td>
+								<input class="button" type="button" id="fp_reset_deleted_syndicated_posts" id="fp_reset_deleted_syndicated_posts" value="<?php _e( 'Reset Deleted Posts', 'feed-pull' ); ?>">
+								<img style="vertical-align: middle; opacity: 0; margin-left: .3em;" id="fp-spinner" src="<?php echo home_url( '/wp-includes/images/wpspin.gif' ); ?>">
+								<p><?php _e( "Feed Pull won't resync posts that have been deleted. If you want to resync posts that have been deleted, you can reset that cache.", 'feed-pull' ); ?></p>
 							</td>
 						</tr>
 					</tbody>
