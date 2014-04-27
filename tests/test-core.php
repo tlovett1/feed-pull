@@ -340,6 +340,72 @@ class FPTestCore extends WP_UnitTestCase {
 		$this->assertEquals( count( $query->posts ), 12 );
 	}
 
+	/**
+	 * Test pulling posts, deleting a post, repulling, and verifying that post didn't repull
+	 *
+	 * @since 0.1.6
+	 */
+	public function testPullDeletedPost() {
+		$feed_id = $this->_createSourceFeed( 'qz.xml' );
+		$this->_setupSourceFeed( $feed_id, $this->feeds['qz.xml'] );
+
+		$first_pull = new FP_Pull();
+
+		// Make sure our pull resulted in no errors or warnings
+		$errors = $first_pull->get_log_messages_by_type( $feed_id, 'error' );
+		$this->assertTrue( empty( $errors ) );
+		$warnings = $first_pull->get_log_messages_by_type( $feed_id, 'warning' );
+		$this->assertTrue( empty( $warnings ) );
+
+		// Do a pull for all the posts in the feed
+		$args = array(
+			'post_type' => 'post',
+			'posts_per_page' => 50,
+			'no_found_rows' => true,
+			'cache_results' => false,
+			'meta_key' => 'fp_syndicated_post',
+			'meta_value' => 1,
+		);
+
+		$query = new WP_Query( $args );
+
+		$this->assertEquals( count( $query->posts ), 12 );
+
+		// Delete some posts
+
+		wp_delete_post( $query->posts[3]->ID, true );
+		wp_delete_post( $query->posts[5]->ID, true );
+
+		// Pull feed again
+		$second_pull = new FP_Pull();
+
+		// Make sure our pull resulted in no errors or warnings
+		$errors = $second_pull->get_log_messages_by_type( $feed_id, 'error' );
+		$this->assertTrue( empty( $errors ) );
+		$warnings = $second_pull->get_log_messages_by_type( $feed_id, 'warning' );
+		$this->assertEquals( count( $warnings ), 2 );
+
+		// Make sure the delete post did not pull again
+		$args = array(
+			'post_type' => 'post',
+			'posts_per_page' => 50,
+			'no_found_rows' => true,
+			'cache_results' => false,
+			'meta_key' => 'fp_syndicated_post',
+			'meta_value' => 1,
+		);
+
+		$query = new WP_Query( $args );
+
+		$this->assertEquals( count( $query->posts ), 10 );
+
+	}
+
+	/**
+	 * Test taxonomy field mapping
+	 *
+	 * @since 0.1.6
+	 */
 	public function testTaxonomyMappingType() {
 		$feed_id = $this->_createSourceFeed( 'qz.xml' );
 		$this->_setupSourceFeed( $feed_id, $this->feeds['qz.xml'] );

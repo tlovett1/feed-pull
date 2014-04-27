@@ -23,7 +23,36 @@ class FP_Source_Feed_CPT {
 		add_filter( 'manage_fp_feed_posts_columns' , array( $this, 'filter_columns' ) );
 		add_action( 'manage_fp_feed_posts_custom_column' , array( $this, 'action_custom_columns' ), 10, 2 );
 		add_action( 'post_submitbox_misc_actions', array( $this, 'action_post_submitbox_misc_actions' ) );
+		add_action( 'before_delete_post', array( $this, 'action_delete_post' ) );
     }
+
+	/**
+	 * Mark a post as deleted if it has been syndicated
+	 *
+	 * @param int $post_id
+	 * @since 0.1.6
+	 */
+	public function action_delete_post( $post_id ) {
+
+		$source_feed_id = get_post_meta( $post_id, 'fp_source_feed_id', true );
+
+		if ( ! empty( $source_feed_id ) ) {
+
+			$guid = get_post_meta( $post_id, 'fp_guid', true );
+
+			if ( ! empty( $guid ) ) {
+				$guid = esc_url_raw( $guid );
+
+				$deleted_posts = get_option( FP_DELETED_OPTION_NAME, array() );
+
+				if ( ! in_array( $guid, $deleted_posts ) ) {
+					$deleted_posts[] = $guid;
+
+					update_option( FP_DELETED_OPTION_NAME, $deleted_posts );
+				}
+			}
+		}
+	}
 
 	/**
 	 * Enqueue post new/edit screen scripts/styles

@@ -302,6 +302,15 @@ class FP_Pull {
 						continue;
 					}
 				} else {
+					// Since we know an existing post doesn't exist. Let's make sure the post
+					// hasn't been deleted in the past
+					$deleted_posts = get_option( FP_DELETED_OPTION_NAME );
+
+					if ( ! empty( $deleted_posts ) && in_array( esc_url_raw( $new_post_args['guid'] ), $deleted_posts ) ) {
+						$this->log( __( 'A post with this GUID has already been syndicated and deleted.', 'feed-pull' ), $source_feed_id, 'warning' );
+						continue;
+					}
+
 					$this->log( sprintf( __( 'Attempting to create post with guid %s', 'feed-pull' ), sanitize_text_field( $new_post_args['guid'] ) ), $source_feed_id, 'status' );
 				}
 
@@ -354,6 +363,7 @@ class FP_Pull {
 
 					// Mark the post as syndicated
 					update_post_meta( $new_post_id, 'fp_syndicated_post', 1 );
+					update_post_meta( $new_post_id, 'fp_source_feed_id', (int) $source_feed_id );
 
 					// Save GUID for post in meta. We have to do this because of this core WP
 					// bug: https://core.trac.wordpress.org/ticket/24248
