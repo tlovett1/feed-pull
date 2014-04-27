@@ -365,12 +365,12 @@ class FP_Source_Feed_CPT {
 		$field_map = get_post_meta( $post->ID, 'fp_field_map', true );
 
 		?>
-		<p><em><?php _e( 'Map fields from your source feed to fields in your new content.', 'feed-pull' ); ?></em></p>
+		<p><em><?php _e( 'Map fields from your source feed to locations in your new content.', 'feed-pull' ); ?></em></p>
 		<table cellpadding="0" cellspacing="0">
 			<thead>
 				<tr>
 					<th><?php _e( 'Source Field (XPath)', 'feed-pull' ); ?></th>
-					<th><?php _e( 'New Post Field', 'feed-pull' ); ?></th>
+					<th><?php _e( 'New Post Location', 'feed-pull' ); ?></th>
 					<th><?php _e( 'Mapping Type', 'feed-pull' ); ?></th>
 					<th class="action"></th>
 				</tr>
@@ -389,6 +389,7 @@ class FP_Source_Feed_CPT {
 							<select disabled="true">
 								<option value="post_field"><?php _e( 'Post Field', 'feed-pull' ); ?></option>
 								<option value="post_meta"><?php _e( 'Post Meta', 'feed-pull' ); ?></option>
+								<option value="taxonomy"><?php _e( 'Taxonomy', 'feed-pull' ); ?></option>
 							</select>
 							<input type="hidden" name="fp_field_map[<?php echo (int) $i; ?>][mapping_type]" value="post_field">
 						</td>
@@ -410,6 +411,7 @@ class FP_Source_Feed_CPT {
 						<select name="fp_field_map[<?php echo (int) $row_id; ?>][mapping_type]">
 							<option <?php  if ( ! empty( $field['mapping_type'] ) ) selected( 'post_field', $field['mapping_type'] ); ?> value="post_field"><?php _e( 'Post Field', 'feed-pull' ); ?></option>
 							<option <?php  if ( ! empty( $field['mapping_type'] ) ) selected( 'post_meta', $field['mapping_type'] ); ?> value="post_meta"><?php _e( 'Post Meta', 'feed-pull' ); ?></option>
+							<option <?php  if ( ! empty( $field['mapping_type'] ) ) selected( 'taxonomy', $field['mapping_type'] ); ?> value="taxonomy"><?php _e( 'Taxonomy', 'feed-pull' ); ?></option>
 						</select>
 					</td>
 					<td class="action">
@@ -432,6 +434,7 @@ class FP_Source_Feed_CPT {
 					<select name="fp_field_map[<%- rowID %>][mapping_type]">
 						<option value="post_field"><?php _e( 'Post Field', 'feed-pull' ); ?></option>
 						<option value="post_meta"><?php _e( 'Post Meta', 'feed-pull' ); ?></option>
+						<option value="taxonomy"><?php _e( 'Taxonomy', 'feed-pull' ); ?></option>
 					</select>
 				</td>
 				<td class="action">

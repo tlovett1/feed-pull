@@ -240,10 +240,16 @@ class FP_Pull {
 				);
 
 				$meta_fields = array();
+				$taxonomy_fields = array();
 
+				/**
+				 * Handle post field mapping
+				 */
 				foreach ( $field_map as $field ) {
 					if ( 'post_meta' == $field['mapping_type'] ) {
 						$meta_fields[] = $field;
+					} elseif ( 'taxonomy' == $field['mapping_type'] ) {
+						$taxonomy_fields[] = $field;
 					} else {
 						$this->setupCustomNamespaces( $post, $custom_namespaces );
 
@@ -355,6 +361,9 @@ class FP_Pull {
 						update_post_meta( $new_post_id, 'fp_guid', sanitize_text_field( $new_post_args['guid'] ) );
 					}
 
+					/**
+					 * Handle post meta field mappings
+					 */
 					foreach ( $meta_fields as $field ) {
 						$this->setupCustomNamespaces( $post, $custom_namespaces );
 
@@ -378,6 +387,34 @@ class FP_Pull {
 
 						// Todo: sanitization?
 						update_post_meta( $new_post_id, $field['destination_field'], $meta_value );
+					}
+
+					/**
+					 * Handle taxonomy post mappings
+					 */
+					foreach ( $taxonomy_fields as $field ) {
+						$this->setupCustomNamespaces( $post, $custom_namespaces );
+
+						$values = $post->xpath( $field['source_field'] );
+
+						if ( empty( $values ) ) {
+							$this->log( sprintf( __( 'Xpath to source field returns nothing for %s', 'feed-pull' ), sanitize_text_field( $field['source_field'] ) ), $source_feed_id, 'warning', $new_post_id );
+						} else {
+							$pre_filter_terms = array();
+
+							foreach ( $values as $value ) {
+								$pre_filter_terms[] = (string) $value;
+							}
+
+							$terms = apply_filters( 'fp_pre_terms_set', $pre_filter_terms, $field, $post, $source_feed_id );
+						}
+
+						// Todo: sanitization?
+						$set_terms_result = wp_set_object_terms( $new_post_id, array_map( 'sanitize_text_field', $terms ), $field['destination_field'], apply_filters( 'fp_tax_mapping_append', false, $field, $post, $source_feed_id ) );
+
+						if ( is_wp_error( $set_terms_result ) ) {
+							$this->log( sprintf( __( 'Could not set terms: %s', 'feed-pull' ), $set_terms_result->get_error_message() ), $source_feed_id, 'warning', $new_post_id );
+						}
 					}
 				}
 			}

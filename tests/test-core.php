@@ -107,6 +107,11 @@ class FPTestCore extends WP_UnitTestCase {
 				),
 				array(
 					'source_field' => 'category',
+					'destination_field' => 'post_tag',
+					'mapping_type' => 'taxonomy',
+				),
+				array(
+					'source_field' => 'category',
 					'destination_field' => 'categories',
 					'mapping_type' => 'post_meta',
 				),
@@ -335,8 +340,49 @@ class FPTestCore extends WP_UnitTestCase {
 		$this->assertEquals( count( $query->posts ), 12 );
 	}
 
+	public function testTaxonomyMappingType() {
+		$feed_id = $this->_createSourceFeed( 'qz.xml' );
+		$this->_setupSourceFeed( $feed_id, $this->feeds['qz.xml'] );
+
+		$first_pull = new FP_Pull();
+
+		// Make sure our pull resulted in no errors or warnings
+		$errors = $first_pull->get_log_messages_by_type( $feed_id, 'error' );
+		$this->assertTrue( empty( $errors ) );
+		$warnings = $first_pull->get_log_messages_by_type( $feed_id, 'warning' );
+		$this->assertTrue( empty( $warnings ) );
+
+		$args = array(
+			'post_type' => 'post',
+			'posts_per_page' => 50,
+			'no_found_rows' => true,
+			'cache_results' => false,
+			'meta_key' => 'fp_syndicated_post',
+			'meta_value' => 1,
+			'tag' => 'Uncategorized'
+		);
+
+		$query = new WP_Query( $args );
+
+		$this->assertEquals( count( $query->posts ), 11 );
+
+		while ( $query->have_posts() ) {
+			$query->the_post();
+
+			$terms = get_the_terms( get_the_ID(), 'post_tag' );
+
+			if ( get_the_title() == 'You really need to wear wackier socks to work' ) {
+				// There are 11 terms associated with this specific post
+				$this->assertEquals( count( $terms ), 11 );
+			}
+		}
+
+		wp_reset_postdata();
+	}
+
 	/**
-	 * Test pulling a group of nodes
+	 * Test pulling a group of nodes. If more than one node exists, they should be saved as an
+	 * array in some location.
 	 *
 	 * @since 0.1.6
 	 */
@@ -359,7 +405,6 @@ class FPTestCore extends WP_UnitTestCase {
 			'cache_results' => false,
 			'meta_key' => 'fp_syndicated_post',
 			'meta_value' => 1,
-			'author' => 1,
 		);
 
 		$query = new WP_Query( $args );
@@ -374,6 +419,7 @@ class FPTestCore extends WP_UnitTestCase {
 			$this->assertTrue( ( is_array( $categories ) && count( $categories ) >= 2 ) );
 
 			if ( get_the_title() == 'You really need to wear wackier socks to work' ) {
+				// There are 11 terms associated with this specific post
 				$this->assertEquals( count( $categories ), 11 );
 			}
 		}
