@@ -4,7 +4,7 @@ Donate link: http://www.taylorlovett.com
 Tags: feeds, curation tool, syndication, rss feed, rss, atom feed, feed pull, feed reader, xml
 Requires at least: 3.0
 Tested up to: 3.9
-Stable tag: 0.1.6
+Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,6 +65,10 @@ You should use the prefix in your XPath queries. For example, instead of "//feed
 You can learn more about namespaces here: [http://www.w3schools.com/xml/xml_namespaces.asp](http://www.w3schools.com/xml/xml_namespaces.asp)
 
 == Changelog ==
+= 0.2.0 =
+* Properly update posts - fixes multiple bugs
+* Manual option for clearing deleted post cache
+
 = 0.1.6 =
 * Taxonomy field mapping
 * Don't repull deleted posts
