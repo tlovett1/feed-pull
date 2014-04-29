@@ -601,7 +601,7 @@ class FP_Source_Feed_CPT {
 
 		?>
 		<div class="misc-pub-section misc-pub-fp-last-pulled">
-			<label><?php _e( 'Last Pulled On:', 'feed-pull' ); ?></label>
+			<label><?php _e( 'Last pulled on:', 'feed-pull' ); ?></label>
 			<span><strong>
 				<?php
 				$last_pull = get_post_meta( get_the_ID(), 'fp_last_pull_time', true );
