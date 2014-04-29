@@ -336,7 +336,13 @@ class FP_Pull {
 					}
 				}
 
-				$new_post_id = wp_insert_post( apply_filters( 'fp_post_args', $new_post_args, $post, $source_feed_id ), true );
+				$post_args = apply_filters( 'fp_post_args', $new_post_args, $post, $source_feed_id );
+
+				if ( $update ) {
+					$new_post_id = wp_update_post( $post_args, true );
+				} else {
+					$new_post_id = wp_insert_post( $post_args, true );
+				}
 
 				// Set categories if they exist
 				// Todo: what if the post type does not support categories?
