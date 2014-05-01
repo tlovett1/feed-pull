@@ -4,7 +4,7 @@ Donate link: http://www.taylorlovett.com
 Tags: feeds, curation tool, syndication, rss feed, rss, atom feed, feed pull, feed reader, xml
 Requires at least: 3.0
 Tested up to: 3.9
-Stable tag: 0.2.1
+Stable tag: 0.2.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,7 +65,7 @@ You should use the prefix in your XPath queries. For example, instead of "//feed
 You can learn more about namespaces here: [http://www.w3schools.com/xml/xml_namespaces.asp](http://www.w3schools.com/xml/xml_namespaces.asp)
 
 == Changelog ==
-= 0.2.1 =
+= 0.2.2 =
 * Fix category tagging issue where syndicated posts were tagged as Uncategorized even if other categories were chosen.
 
 = 0.2.0 =
