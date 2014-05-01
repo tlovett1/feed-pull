@@ -4,7 +4,7 @@ Donate link: http://www.taylorlovett.com
 Tags: feeds, curation tool, syndication, rss feed, rss, atom feed, feed pull, feed reader, xml
 Requires at least: 3.0
 Tested up to: 3.9
-Stable tag: 0.2.0
+Stable tag: 0.2.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -65,6 +65,9 @@ You should use the prefix in your XPath queries. For example, instead of "//feed
 You can learn more about namespaces here: [http://www.w3schools.com/xml/xml_namespaces.asp](http://www.w3schools.com/xml/xml_namespaces.asp)
 
 == Changelog ==
+= 0.2.1 =
+* Fix category tagging issue where syndicated posts were tagged as Uncategorized even if other categories were chosen.
+
 = 0.2.0 =
 * Properly update posts - fixes multiple bugs
 * Manual option for clearing deleted post cache
@@ -75,21 +78,21 @@ You can learn more about namespaces here: [http://www.w3schools.com/xml/xml_name
 
 = 0.1.5 =
 Custom namespacing
-Unit tests
-Random bug fixes
+* Unit tests
+* Random bug fixes
 
 = 0.1.4 =
-Fix post guid lookup
+* Fix post guid lookup
 
 = 0.1.3 =
-Tiny bug fixes
+* Tiny bug fixes
 
 = 0.1.2 =
-Tiny bug fixes
-Refresh logging meta box on single pull
+* Tiny bug fixes
+* Refresh logging meta box on single pull
 
 = 0.1.1 =
-Tiny bug fixes
+* Tiny bug fixes
 
 = 0.1.0 =
-Plugin release
+* Plugin release
