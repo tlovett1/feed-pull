@@ -28,7 +28,7 @@ feed pulling. Here are some differences between the two plugins:
 * Feed Pull allows you to schedule content pulling in the future.
 * Feed Pull allows you to do manual pulls using AJAX rather than a sometimes frustrating one-time cron job.
 
-Fork the plugin on [http://github.com/tlovett1/feed-pull](Github)
+Fork the plugin on [Github](http://github.com/tlovett1/feed-pull)
 
 == Installation ==
 

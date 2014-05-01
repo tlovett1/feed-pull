@@ -305,7 +305,6 @@ class FPTestCore extends WP_UnitTestCase {
 		$cat1 = wp_create_category( 'First Category' );
 		$cat2 = wp_create_category( 'Second Category' );
 		$cat3 = wp_create_category( 'Third Category' );
-		$cat4 = wp_create_category( 'Fourth Category' );
 
 		$cats = array( $cat1, $cat2, $cat3 );
 
@@ -364,6 +363,48 @@ class FPTestCore extends WP_UnitTestCase {
 		$query = new WP_Query( $args );
 
 		$this->assertEquals( count( $query->posts ), 12 );
+
+		// Make sure there are no other categories
+		while ( $query->have_posts() ) {
+			$query->the_post();
+
+			$cats = get_the_category( get_the_ID() );
+
+			$this->assertEquals( count( $cats ), 3 );
+		}
+
+		wp_reset_postdata();
+
+		$second_pull = new FP_Pull();
+
+		// Make sure our pull resulted in no errors or warnings
+		$errors = $second_pull->get_log_messages_by_type( $feed_id, 'error' );
+		$this->assertTrue( empty( $errors ) );
+		$warnings = $second_pull->get_log_messages_by_type( $feed_id, 'warning' );
+		$this->assertTrue( empty( $warnings ) );
+
+		$args = array(
+			'post_type' => 'post',
+			'posts_per_page' => 50,
+			'no_found_rows' => true,
+			'cache_results' => false,
+			'meta_key' => 'fp_syndicated_post',
+			'meta_value' => 1,
+			'cat' => $cat3 . ',' . $cat2 . ',' . $cat1,
+		);
+
+		$query = new WP_Query( $args );
+
+		$this->assertEquals( count( $query->posts ), 12 );
+
+		// Make sure there are no other categories
+		while ( $query->have_posts() ) {
+			$query->the_post();
+
+			$cats = get_the_category( get_the_ID() );
+
+			$this->assertEquals( count( $cats ), 3 );
+		}
 	}
 
 	/**

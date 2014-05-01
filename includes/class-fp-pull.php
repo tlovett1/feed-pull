@@ -344,14 +344,6 @@ class FP_Pull {
 					$new_post_id = wp_insert_post( $post_args, true );
 				}
 
-				// Set categories if they exist
-				// Todo: what if the post type does not support categories?
-				if ( ! empty( $post_categories ) ) {
-					$sanitized_post_categories = array_map( 'absint', $post_categories );
-
-					wp_set_object_terms( $new_post_id, apply_filters( 'fp_post_categories', $sanitized_post_categories ), 'category', true );
-				};
-
 				if ( is_wp_error( $new_post_id ) ) {
 					if ( $update ) {
 						$this->log( sprintf( __( 'Could not update post: %s', 'feed-pull' ), $new_post_id->get_error_message() ), $source_feed_id, 'error' );
@@ -365,6 +357,14 @@ class FP_Pull {
 					} else {
 						do_action( 'fp_created_post', $new_post_id, $source_feed_id );
 						$this->log( __( 'Created new post', 'feed-pull' ), $source_feed_id, 'status', $new_post_id );
+					}
+
+					// Set categories if they exist
+					// Todo: what if the post type does not support categories?
+					if ( ! empty( $post_categories ) ) {
+						$sanitized_post_categories = array_map( 'absint', $post_categories );
+
+						wp_set_object_terms( $new_post_id, apply_filters( 'fp_post_categories', $sanitized_post_categories ), 'category', $update );
 					}
 
 					// Mark the post as syndicated
