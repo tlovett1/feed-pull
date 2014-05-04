@@ -39,30 +39,7 @@ pulled in the background. By default feed pulls occur once per hour.
 
 = Configure a Feed =
 
-1. After activating the plugin, you should now see a "Source Feeds" menu item in your admin menu. Add a new source
-feed.
-1. Enter the URL of any XML feed in the feed url input box.
-1. Enter an XPath to the posts within your feed. This tells the plugin where each piece of content lives in your
-feed.  For most RSS feeds, channel/item will do just fine. Here is a bland tutorial if you want to learn more about
-XPath: [http://www.w3schools.com/XPath/](http://www.w3schools.com/XPath/)
-1. Setup the new content to your liking. The defaults are good to start with.
-1. Finally, we need to map fields in the feed to your new posts. Title and GUID are required. Title is
-self-explanatory. A GUID is a unique identifier for posts. Items within your feed should have some sort of GUID or
-permalink that you can map to the post GUID. GUID's allow the plugin to determine if a piece of content has already
-been syndicated or not.
-
-= Atom Feeds and Custom Namespaces =
-Sometimes feeds make use of prefixes on certain elements. This happens for a variety of reasons; one is to avoid
-conflicts. Prefixes should have a namespace defined somewhere using an "xmlns" attribute. Feed Pull lets you
-define custom namespaces. This feature is advanced and not needed in most cases.
-
-However, certain feeds, like the Atom feeds outputted by WordPress define a document level namespace without a
-prefix. This is totally fine except it makes XPath queries difficult. Feed Pull should automatically detect if
-this situation is happening and create a namespace with the prefix "default" and the url "http://www.w3.org/2005/Atom".
-You should use the prefix in your XPath queries. For example, instead of "//feed/entry", your query should be
-"//default:feed/default:entry". Instead of "title" in your field map, your query should probably be "default:title".
-
-You can learn more about namespaces here: [http://www.w3schools.com/xml/xml_namespaces.asp](http://www.w3schools.com/xml/xml_namespaces.asp)
+Super awesome configuration instructions are available on [Github](http://github.com/tlovett1/feed-pull).
 
 == Changelog ==
 = 0.2.2 =
