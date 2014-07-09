@@ -4,7 +4,7 @@ Donate link: http://www.taylorlovett.com
 Tags: feeds, curation tool, syndication, rss feed, rss, atom feed, feed pull, feed reader, xml
 Requires at least: 3.0
 Tested up to: 3.9
-Stable tag: 0.2.2
+Stable tag: 0.2.3
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -42,6 +42,9 @@ pulled in the background. By default feed pulls occur once per hour.
 Super awesome configuration instructions are available on [Github](http://github.com/tlovett1/feed-pull).
 
 == Changelog ==
+= 0.2.3 =
+* .pot file for translation.
+
 = 0.2.2 =
 * Fix category tagging issue where syndicated posts were tagged as Uncategorized even if other categories were chosen.
 

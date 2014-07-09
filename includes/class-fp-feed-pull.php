@@ -106,7 +106,7 @@ class FP_Feed_Pull {
 	 * @return void
 	 */
 	public function action_plugins_loaded() {
-		load_plugin_textdomain( 'feed-pull', false, basename( dirname( __FILE__ ) ) . '/languages' );
+		load_plugin_textdomain( 'feed-pull', false, basename( dirname( __FILE__ ) ) . '/lang' );
 	}
 
 	/**
