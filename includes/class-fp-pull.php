@@ -433,6 +433,8 @@ class FP_Pull {
 						}
 					}
 				}
+				
+				do_action( 'fp_handled_post', $new_post_id, $source_feed_id );
 			}
 
 			// Save last pull into log for source feed
