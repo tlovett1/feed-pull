@@ -12,9 +12,9 @@
 #fp_source_details .field-description {
   font-style: italic; }
 
-#visibility, #minor-publishing-actions {
-  display: none; }
-
+/*#visibility, #minor-publishing-actions {
+	display: none;
+}*/
 .misc-pub-fp-last-pulled label {
   background: url("../../img/feed-document.png") no-repeat top left;
   padding-left: 25px; }
@@ -35,6 +35,12 @@
     vertical-align: middle;
     opacity: 0;
     margin-left: .3em; }
+  #fp_manual_pull .button-container #fp_manual_content {
+    display: none;
+    margin-top: 20px;
+    overflow-x: scroll;
+    font-family: monospace;
+    white-space: pre; }
 
 #fp_field_mapping input[type=button] {
   width: 70px;

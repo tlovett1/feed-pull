@@ -10,11 +10,15 @@ class FP_Pull {
 	/**
 	 * Instantiating this class does a pull
 	 *
-	 * @param int $source_feed_id
+	 * @param int|null|bool $source_feed_id
 	 * @since 0.1.0
 	 */
 	public function __construct( $source_feed_id = null ) {
-		$this->do_pull( $source_feed_id );
+
+		if ( false !== $source_feed_id ) {
+			$this->do_pull( $source_feed_id );
+		}
+
 	}
 
 	/**
@@ -134,15 +138,101 @@ class FP_Pull {
 	}
 
 	/**
-	 * Pull from all our source feeds
+	 * Get source feed posts
 	 *
 	 * @param int $source_feed_id
+	 * @since 0.2.4
+	 *
+	 * @return array<SimpleXMLElement>|boolean Feed posts array of SimpleXMLElement or false on error
+	 */
+	public function get_feed_posts( $source_feed_id ) {
+
+		if ( get_the_ID() != $source_feed_id ) {
+			$feed = get_post( $source_feed_id );
+
+			setup_postdata( $feed );
+		}
+
+		$feed_url = get_post_meta( $source_feed_id, 'fp_feed_url', true );
+		$posts_xpath = get_post_meta( $source_feed_id, 'fp_posts_xpath', true );
+		$field_map = get_post_meta( $source_feed_id, 'fp_field_map', true );
+		$custom_namespaces = get_post_meta( $source_feed_id, 'fp_custom_namespaces', true );
+
+		// Provide some extra control for custom namespaces
+		$custom_namespaces = apply_filters( 'fp_custom_namespaces', $custom_namespaces, $source_feed_id );
+
+		if ( empty( $posts_xpath ) ) {
+			$this->log( __( 'No xpath to post items', 'feed-pull' ), $source_feed_id, 'error' );
+
+			$this->handle_feed_log( $source_feed_id );
+
+			return false;
+		}
+
+		if ( empty( $feed_url ) ) {
+			$this->log( __( 'No feed URL', 'feed-pull' ), $source_feed_id, 'error' );
+
+			$this->handle_feed_log( $source_feed_id );
+
+			return false;
+		}
+
+		if ( empty( $field_map ) ) {
+			$this->log( __( 'No field map', 'feed-pull' ), $source_feed_id, 'error' );
+
+			$this->handle_feed_log( $source_feed_id );
+
+			return false;
+		}
+
+		$raw_feed_contents = fp_fetch_feed( $feed_url );
+
+		if ( is_wp_error( $raw_feed_contents ) ) {
+			$this->log( __( 'Could not fetch feed', 'feed-pull' ), $source_feed_id, 'error' );
+
+			$this->handle_feed_log( $source_feed_id );
+
+			return false;
+		}
+
+		// Suppress all warnings/errors for this
+		$feed = @simplexml_load_string( $raw_feed_contents );
+
+		if ( ! $feed ) {
+			$this->log( __( 'Feed could not be parsed', 'feed-pull' ), $source_feed_id, 'error' );
+
+			$this->handle_feed_log( $source_feed_id );
+
+			return false;
+		}
+
+		$this->setupCustomNamespaces( $feed, $custom_namespaces );
+
+		$posts = $feed->xpath( $posts_xpath );
+
+		if ( empty( $posts ) ) {
+			$this->log( __( 'No items in feed', 'feed-pull' ), $source_feed_id, 'warning' );
+
+			$this->handle_feed_log( $source_feed_id );
+
+			return false;
+		}
+
+		return $posts;
+
+	}
+
+	/**
+	 * Pull from all our source feeds
+	 *
+	 * @param int|null $source_feed_id Source Feed ID to pull one feed or null to pull all
 	 * @since 0.1.0
 	 */
 	private function do_pull( $source_feed_id = null ) {
 
 		// Do nothing if feed pulling is not turned on
 		$option = fp_get_option();
+
 		if ( empty( $option['enable_feed_pull'] ) ) {
 			return;
 		}
@@ -170,10 +260,12 @@ class FP_Pull {
 
 			$source_feed_id = get_the_ID();
 
-			$this->log( __( 'Pulling feed', 'feed-pull' ), $source_feed_id, 'status' );
+			$posts = $this->get_feed_posts( $source_feed_id );
 
-			$feed_url = get_post_meta( $source_feed_id, 'fp_feed_url', true );
-			$posts_xpath = get_post_meta( $source_feed_id, 'fp_posts_xpath', true );
+			if ( empty( $posts ) ) {
+				continue;
+			}
+
 			$field_map = get_post_meta( $source_feed_id, 'fp_field_map', true );
 			$new_post_status = get_post_meta( $source_feed_id, 'fp_post_status', true );
 			$new_post_type = get_post_meta( $source_feed_id, 'fp_post_type', true );
@@ -181,58 +273,9 @@ class FP_Pull {
 			$post_categories = get_post_meta( $source_feed_id, 'fp_new_post_categories', true );
 			$custom_namespaces = get_post_meta( $source_feed_id, 'fp_custom_namespaces', true );
 
-			// Provide some extra control for custom namespaces
-			$custom_namespaces = apply_filters( 'fp_custom_namespaces', $custom_namespaces, $source_feed_id );
-
-			if ( empty( $posts_xpath ) ) {
-				$this->log( __( 'No xpath to post items', 'feed-pull' ), $source_feed_id, 'error' );
-				$this->handle_feed_log( $source_feed_id );
-				continue;
-			}
-
-			if ( empty( $feed_url ) ) {
-				$this->log( __( 'No feed URL', 'feed-pull' ), $source_feed_id, 'error' );
-				$this->handle_feed_log( $source_feed_id );
-				continue;
-			}
-
-			if ( empty( $field_map ) ) {
-				$this->log( __( 'No field map', 'feed-pull' ), $source_feed_id, 'error' );
-				$this->handle_feed_log( $source_feed_id );
-				continue;
-			}
-
-			$raw_feed_contents = fp_fetch_feed( $feed_url );
-
-			if ( is_wp_error( $raw_feed_contents ) ) {
-				$this->log( __( 'Could not fetch feed', 'feed-pull' ), $source_feed_id, 'error' );
-				$this->handle_feed_log( $source_feed_id );
-				continue;
-			}
-
-			// Suppress all warnings/errors for this
-			$feed = @simplexml_load_string( $raw_feed_contents );
-
-			if ( ! $feed ) {
-				$this->log( __( 'Feed could not be parsed', 'feed-pull' ), $source_feed_id, 'error' );
-				$this->handle_feed_log( $source_feed_id );
-				continue;
-			}
-
-			$this->setupCustomNamespaces( $feed, $custom_namespaces );
-
-			$posts = $feed->xpath( $posts_xpath );
-
-			if ( empty( $posts ) ) {
-				$this->log( __( 'No items in feed', 'feed-pull' ), $source_feed_id, 'warning' );
-				$this->handle_feed_log( $source_feed_id );
-				continue;
-			}
-
 			do_action( 'fp_pre_feed_pull', $source_feed_id );
 
 			foreach ( $posts as $post ) {
-
 				$new_post_args = array(
 					'post_type' => $new_post_type,
 					'post_status' => $new_post_status,
@@ -432,9 +475,9 @@ class FP_Pull {
 							$this->log( sprintf( __( 'Could not set terms: %s', 'feed-pull' ), $set_terms_result->get_error_message() ), $source_feed_id, 'warning', $new_post_id );
 						}
 					}
+
+					do_action( 'fp_handled_post', $new_post_id, $source_feed_id );
 				}
-				
-				do_action( 'fp_handled_post', $new_post_id, $source_feed_id );
 			}
 
 			// Save last pull into log for source feed
