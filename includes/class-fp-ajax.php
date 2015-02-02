@@ -53,7 +53,7 @@ class FP_AJAX {
 	 */
 	public function action_pull() {
 		$output = array();
-		$output['message'] = __( 'Invalid AJAX Request, try again.', '' );
+		$output['message'] = __( 'Invalid AJAX Request, try again.', 'feed-pull' );
 		$output['success'] = false;
 
 		if ( check_ajax_referer( 'fp_pull_nonce', 'nonce', false ) ) {
