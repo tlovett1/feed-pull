@@ -146,7 +146,7 @@ class FP_Pull {
 	 * @since 1.0.0
 	 * @return string|WP_Error
 	 */
-	public function fetch_feed( $url_or_path ) {
+	public static function fetch_feed( $url_or_path ) {
 
 		$file_contents = '';
 
@@ -212,7 +212,7 @@ class FP_Pull {
 			return false;
 		}
 
-		$raw_feed_contents = $this->fetch_feed( $feed_url );
+		$raw_feed_contents = self::fetch_feed( $feed_url );
 
 		if ( is_wp_error( $raw_feed_contents ) ) {
 			$this->log( __( 'Could not fetch feed', 'feed-pull' ), $source_feed_id, 'error' );
@@ -575,8 +575,6 @@ class FP_Pull {
  */
 function fp_fetch_feed( $url_or_path ) {
 
-	$feed_pull = new FP_Pull( false );
-
-	return $feed_pull->fetch_feed( $url_or_path );
+	return FP_Pull::fetch_feed( $url_or_path );
 
 }
