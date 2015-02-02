@@ -13,7 +13,7 @@
   font-style: italic; }
 
 #visibility, #minor-publishing-actions {
-	display: none; }
+  display: none; }
 
 .misc-pub-fp-last-pulled label {
   background: url("../../img/feed-document.png") no-repeat top left;
