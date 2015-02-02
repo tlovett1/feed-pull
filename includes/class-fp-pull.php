@@ -140,21 +140,17 @@ class FP_Pull {
 	}
 
 	/**
-	 * Get source feed posts
+	 * Get source feed items
 	 *
 	 * @param int $source_feed_id
 	 * @since 1.0.0
 	 *
-	 * @return array|boolean Feed posts array of mapped fields or false on error
+	 * @return array<SimpleXMLElement>|boolean Feed posts array of SimpleXMLElement items or false on error
 	 */
-	public function get_feed_posts( $source_feed_id ) {
-
-		$new_post_status = get_post_meta( $source_feed_id, 'fp_post_status', true );
-		$new_post_type = get_post_meta( $source_feed_id, 'fp_post_type', true );
+	public function get_feed_items( $source_feed_id ) {
 
 		$feed_url = get_post_meta( $source_feed_id, 'fp_feed_url', true );
 		$item_xpath = get_post_meta( $source_feed_id, 'fp_posts_xpath', true );
-		$field_map = get_post_meta( $source_feed_id, 'fp_field_map', true );
 		$custom_namespaces = get_post_meta( $source_feed_id, 'fp_custom_namespaces', true );
 
 		// Provide some extra control for custom namespaces
@@ -170,14 +166,6 @@ class FP_Pull {
 
 		if ( empty( $feed_url ) ) {
 			$this->log( __( 'No feed URL', 'feed-pull' ), $source_feed_id, 'error' );
-
-			$this->handle_feed_log( $source_feed_id );
-
-			return false;
-		}
-
-		if ( empty( $field_map ) ) {
-			$this->log( __( 'No field map', 'feed-pull' ), $source_feed_id, 'error' );
 
 			$this->handle_feed_log( $source_feed_id );
 
@@ -209,6 +197,39 @@ class FP_Pull {
 
 		$items = $feed->xpath( $item_xpath );
 
+		return $items;
+
+	}
+
+	/**
+	 * Get source feed posts
+	 *
+	 * @param int $source_feed_id
+	 * @since 1.0.0
+	 *
+	 * @return array|boolean Feed posts array of mapped fields or false on error
+	 */
+	public function get_feed_posts( $source_feed_id ) {
+
+		$new_post_status = get_post_meta( $source_feed_id, 'fp_post_status', true );
+		$new_post_type = get_post_meta( $source_feed_id, 'fp_post_type', true );
+
+		$field_map = get_post_meta( $source_feed_id, 'fp_field_map', true );
+		$custom_namespaces = get_post_meta( $source_feed_id, 'fp_custom_namespaces', true );
+
+		// Provide some extra control for custom namespaces
+		$custom_namespaces = apply_filters( 'fp_custom_namespaces', $custom_namespaces, $source_feed_id );
+
+		if ( empty( $field_map ) ) {
+			$this->log( __( 'No field map', 'feed-pull' ), $source_feed_id, 'error' );
+
+			$this->handle_feed_log( $source_feed_id );
+
+			return false;
+		}
+
+		$items = $this->get_feed_items( $source_feed_id );
+
 		if ( empty( $items ) ) {
 			$this->log( __( 'No items in feed', 'feed-pull' ), $source_feed_id, 'warning' );
 
@@ -219,15 +240,18 @@ class FP_Pull {
 
 		$posts = array();
 
+		/**
+		 * @var $item SimpleXMLElement
+		 */
 		foreach ( $items as $item ) {
 			$post = array(
-				'post_fields' => array(
+				'post_field' => array(
 					'post_type' => $new_post_type,
 					'post_status' => $new_post_status,
 					'post_excerpt' => '',
 				),
-				'meta_fields' => array(),
-				'taxonomy_fields' => array(),
+				'post_meta' => array(),
+				'taxonomy' => array(),
 				'item' => $item
 			);
 
@@ -253,7 +277,7 @@ class FP_Pull {
 							$pre_filter_meta_value = (string) $values[ 0 ];
 						}
 
-						$post[ 'meta_fields' ][ $field[ 'destination_field' ] ] = apply_filters( 'fp_pre_post_meta_value', $pre_filter_meta_value, $field, $item, $source_feed_id );
+						$post[ $field[ 'mapping_type' ] ][ $field[ 'destination_field' ] ] = apply_filters( 'fp_pre_post_meta_value', $pre_filter_meta_value, $field, $item, $source_feed_id );
 					}
 				} elseif ( 'taxonomy' == $field[ 'mapping_type' ] ) {
 					$this->setupCustomNamespaces( $item, $custom_namespaces );
@@ -269,7 +293,7 @@ class FP_Pull {
 							$pre_filter_terms[] = (string) $value;
 						}
 
-						$post[ 'taxonomy_fields' ][ $field[ 'destination_field' ] ] = apply_filters( 'fp_pre_terms_set', $pre_filter_terms, $field, $item, $source_feed_id );
+						$post[ $field[ 'mapping_type' ] ][ $field[ 'destination_field' ] ] = apply_filters( 'fp_pre_terms_set', $pre_filter_terms, $field, $item, $source_feed_id );
 					}
 				} else {
 					$this->setupCustomNamespaces( $item, $custom_namespaces );
@@ -289,7 +313,7 @@ class FP_Pull {
 							$pre_filter_post_value = (string) $values[ 0 ];
 						}
 
-						$post[ 'post_fields' ][ $field[ 'destination_field' ] ] = apply_filters( 'fp_pre_post_insert_value', $pre_filter_post_value, $field, $item, $source_feed_id );
+						$post[ $field[ 'mapping_type' ] ][ $field[ 'destination_field' ] ] = apply_filters( 'fp_pre_post_insert_value', $pre_filter_post_value, $field, $item, $source_feed_id );
 					}
 				}
 			}
@@ -297,23 +321,25 @@ class FP_Pull {
 			// Make sure we have all the required fields
 			$required_fields = FP_Source_Feed_CPT::get_required_fields();
 
-			foreach ( $post[ 'post_fields' ] as $arg_key => $arg_value ) {
+			foreach ( $post[ 'post_field' ] as $arg_key => $arg_value ) {
 				if ( ! empty( $arg_value ) && in_array( $arg_key, $required_fields ) ) {
 					unset( $required_fields[ array_search( $arg_key, $required_fields ) ] );
 				}
 			}
 
-			foreach ( $post[ 'meta_fields' ] as $arg_key => $arg_value ) {
+			foreach ( $post[ 'post_meta' ] as $arg_key => $arg_value ) {
 				if ( ! empty( $arg_value ) && in_array( $arg_key, $required_fields ) ) {
 					unset( $required_fields[ array_search( $arg_key, $required_fields ) ] );
 				}
 			}
 
-			foreach ( $post[ 'taxonomy_fields' ] as $arg_key => $arg_value ) {
+			foreach ( $post[ 'taxonomy' ] as $arg_key => $arg_value ) {
 				if ( ! empty( $arg_value ) && in_array( $arg_key, $required_fields ) ) {
 					unset( $required_fields[ array_search( $arg_key, $required_fields ) ] );
 				}
 			}
+
+			$required_fields = apply_filters( 'fp_required_fields_validate', $required_fields, $item, $post, $source_feed_id );
 
 			if ( ! empty( $required_fields ) ) {
 				$this->log( __( 'Missing required fields to create/update post', 'feed-pull' ), $source_feed_id, 'error' );
@@ -374,7 +400,7 @@ class FP_Pull {
 			do_action( 'fp_pre_feed_pull', $source_feed_id );
 
 			foreach ( $posts as $post ) {
-				$new_post_args = $post[ 'post_fields' ];
+				$new_post_args = $post[ 'post_field' ];
 
 				$update = false;
 
@@ -469,14 +495,14 @@ class FP_Pull {
 					/**
 					 * Handle post meta field mappings
 					 */
-					foreach ( $post[ 'meta_fields' ] as $field => $meta_value ) {
+					foreach ( $post[ 'post_meta' ] as $field => $meta_value ) {
 						update_post_meta( $new_post_id, $field, $meta_value );
 					}
 
 					/**
 					 * Handle taxonomy post mappings
 					 */
-					foreach ( $post[ 'taxonomy_fields' ] as $field => $terms ) {
+					foreach ( $post[ 'taxonomy' ] as $field => $terms ) {
 						$append = apply_filters( 'fp_tax_mapping_append', false, $field, $post[ 'item' ], $source_feed_id );
 
 						$set_terms_result = wp_set_object_terms( $new_post_id, array_map( 'sanitize_text_field', $terms ), $field, $append );
