@@ -1,5 +1,5 @@
 === Feed Pull ===
-Contributors: tlovett1
+Contributors: tlovett1, 10up
 Donate link: http://www.taylorlovett.com
 Tags: feeds, curation tool, syndication, rss feed, rss, atom feed, feed pull, feed reader, xml
 Requires at least: 3.0
