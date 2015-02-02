@@ -145,7 +145,7 @@ class FP_Pull {
 	 * @param int $source_feed_id
 	 * @since 1.0.0
 	 *
-	 * @return array<SimpleXMLElement>|boolean Feed posts array of SimpleXMLElement or false on error
+	 * @return array|boolean Feed posts array of mapped fields or false on error
 	 */
 	public function get_feed_posts( $source_feed_id ) {
 
@@ -155,15 +155,18 @@ class FP_Pull {
 			setup_postdata( $feed );
 		}
 
+		$new_post_status = get_post_meta( $source_feed_id, 'fp_post_status', true );
+		$new_post_type = get_post_meta( $source_feed_id, 'fp_post_type', true );
+
 		$feed_url = get_post_meta( $source_feed_id, 'fp_feed_url', true );
-		$posts_xpath = get_post_meta( $source_feed_id, 'fp_posts_xpath', true );
+		$item_xpath = get_post_meta( $source_feed_id, 'fp_posts_xpath', true );
 		$field_map = get_post_meta( $source_feed_id, 'fp_field_map', true );
 		$custom_namespaces = get_post_meta( $source_feed_id, 'fp_custom_namespaces', true );
 
 		// Provide some extra control for custom namespaces
 		$custom_namespaces = apply_filters( 'fp_custom_namespaces', $custom_namespaces, $source_feed_id );
 
-		if ( empty( $posts_xpath ) ) {
+		if ( empty( $item_xpath ) ) {
 			$this->log( __( 'No xpath to post items', 'feed-pull' ), $source_feed_id, 'error' );
 
 			$this->handle_feed_log( $source_feed_id );
@@ -210,14 +213,121 @@ class FP_Pull {
 
 		$this->setupCustomNamespaces( $feed, $custom_namespaces );
 
-		$posts = $feed->xpath( $posts_xpath );
+		$items = $feed->xpath( $item_xpath );
 
-		if ( empty( $posts ) ) {
+		if ( empty( $items ) ) {
 			$this->log( __( 'No items in feed', 'feed-pull' ), $source_feed_id, 'warning' );
 
 			$this->handle_feed_log( $source_feed_id );
 
 			return false;
+		}
+
+		$posts = array();
+
+		foreach ( $items as $item ) {
+			$post = array(
+				'post_fields' => array(
+					'post_type' => $new_post_type,
+					'post_status' => $new_post_status,
+					'post_excerpt' => '',
+				),
+				'meta_fields' => array(),
+				'taxonomy_fields' => array(),
+				'item' => $item
+			);
+
+			/**
+			 * Handle post field mapping
+			 */
+			foreach ( $field_map as $field ) {
+				if ( 'post_meta' == $field[ 'mapping_type' ] ) {
+					$this->setupCustomNamespaces( $item, $custom_namespaces );
+
+					$values = $item->xpath( $field[ 'source_field' ] );
+
+					if ( empty( $values ) ) {
+						$this->log( sprintf( __( 'Xpath to source field returns nothing for %s', 'feed-pull' ), sanitize_text_field( $field[ 'source_field' ] ) ), $source_feed_id, 'warning' );
+					} else {
+						if ( count( $values ) > 1 ) {
+							$pre_filter_meta_value = array();
+
+							foreach ( $values as $value ) {
+								$pre_filter_meta_value[] = (string) $value;
+							}
+						} else {
+							$pre_filter_meta_value = (string) $values[ 0 ];
+						}
+
+						$post[ 'meta_fields' ][] = apply_filters( 'fp_pre_post_meta_value', $pre_filter_meta_value, $field, $item, $source_feed_id );
+					}
+				} elseif ( 'taxonomy' == $field[ 'mapping_type' ] ) {
+					$this->setupCustomNamespaces( $item, $custom_namespaces );
+
+					$values = $item->xpath( $field[ 'source_field' ] );
+
+					if ( empty( $values ) ) {
+						$this->log( sprintf( __( 'Xpath to source field returns nothing for %s', 'feed-pull' ), sanitize_text_field( $field[ 'source_field' ] ) ), $source_feed_id, 'warning' );
+					} else {
+						$pre_filter_terms = array();
+
+						foreach ( $values as $value ) {
+							$pre_filter_terms[] = (string) $value;
+						}
+
+						$post[ 'taxonomy_fields' ][] = apply_filters( 'fp_pre_terms_set', $pre_filter_terms, $field, $item, $source_feed_id );
+					}
+				} else {
+					$this->setupCustomNamespaces( $item, $custom_namespaces );
+
+					$values = $item->xpath( $field[ 'source_field' ] );
+
+					if ( empty( $values ) ) {
+						$this->log( sprintf( __( 'Xpath to source field returns nothing for %s', 'feed-pull' ), sanitize_text_field( $field[ 'source_field' ] ) ), $source_feed_id, 'warning' );
+					} else {
+						if ( count( $values ) > 1 ) {
+							$pre_filter_post_value = array();
+
+							foreach ( $values as $value ) {
+								$pre_filter_post_value[] = (string) $value;
+							}
+						} else {
+							$pre_filter_post_value = (string) $values[ 0 ];
+						}
+
+						$post[ 'post_fields' ][ $field[ 'destination_field' ] ] = apply_filters( 'fp_pre_post_insert_value', $pre_filter_post_value, $field, $item, $source_feed_id );
+					}
+				}
+			}
+
+			// Make sure we have all the required fields
+			$required_fields = FP_Source_Feed_CPT::get_required_fields();
+
+			foreach ( $post[ 'post_fields' ] as $arg_key => $arg_value ) {
+				if ( ! empty( $arg_value ) && in_array( $arg_key, $required_fields ) ) {
+					unset( $required_fields[ array_search( $arg_key, $required_fields ) ] );
+				}
+			}
+
+			foreach ( $post[ 'meta_fields' ] as $arg_key => $arg_value ) {
+				if ( ! empty( $arg_value ) && in_array( $arg_key, $required_fields ) ) {
+					unset( $required_fields[ array_search( $arg_key, $required_fields ) ] );
+				}
+			}
+
+			foreach ( $post[ 'taxonomy_fields' ] as $arg_key => $arg_value ) {
+				if ( ! empty( $arg_value ) && in_array( $arg_key, $required_fields ) ) {
+					unset( $required_fields[ array_search( $arg_key, $required_fields ) ] );
+				}
+			}
+
+			if ( ! empty( $required_fields ) ) {
+				$this->log( __( 'Missing required fields to create/update post', 'feed-pull' ), $source_feed_id, 'error' );
+
+				continue;
+			}
+
+			$posts[] = $post;
 		}
 
 		return $posts;
@@ -268,68 +378,13 @@ class FP_Pull {
 				continue;
 			}
 
-			$field_map = get_post_meta( $source_feed_id, 'fp_field_map', true );
-			$new_post_status = get_post_meta( $source_feed_id, 'fp_post_status', true );
-			$new_post_type = get_post_meta( $source_feed_id, 'fp_post_type', true );
 			$allow_updates = get_post_meta( $source_feed_id, 'fp_allow_updates', true );
 			$post_categories = get_post_meta( $source_feed_id, 'fp_new_post_categories', true );
-			$custom_namespaces = get_post_meta( $source_feed_id, 'fp_custom_namespaces', true );
 
 			do_action( 'fp_pre_feed_pull', $source_feed_id );
 
 			foreach ( $posts as $post ) {
-				$new_post_args = array(
-					'post_type' => $new_post_type,
-					'post_status' => $new_post_status,
-					'post_excerpt' => '',
-				);
-
-				$meta_fields = array();
-				$taxonomy_fields = array();
-
-				/**
-				 * Handle post field mapping
-				 */
-				foreach ( $field_map as $field ) {
-					if ( 'post_meta' == $field['mapping_type'] ) {
-						$meta_fields[] = $field;
-					} elseif ( 'taxonomy' == $field['mapping_type'] ) {
-						$taxonomy_fields[] = $field;
-					} else {
-						$this->setupCustomNamespaces( $post, $custom_namespaces );
-
-						$values = $post->xpath( $field['source_field'] );
-
-						if ( empty( $values ) ) {
-							$this->log( sprintf( __( 'Xpath to source field returns nothing for %s', 'feed-pull' ), sanitize_text_field( $field['source_field'] ) ), $source_feed_id, 'warning' );
-						} else {
-							if ( count( $values ) > 1 ) {
-								$pre_filter_post_value = array();
-
-								foreach ( $values as $value ) {
-									$pre_filter_post_value[] = (string) $value;
-								}
-							} else {
-								$pre_filter_post_value = (string) $values[0];
-							}
-
-							$new_post_args[$field['destination_field']] = apply_filters( 'fp_pre_post_insert_value', $pre_filter_post_value, $field, $post, $source_feed_id );
-						}
-					}
-				}
-
-				// Make sure we have all the required fields
-				$required_fields = FP_Source_Feed_CPT::get_required_fields();
-				foreach ( $new_post_args as $arg_key => $arg_value ) {
-					if ( ! empty( $arg_value ) && in_array( $arg_key, $required_fields ) ) {
-						unset( $required_fields[array_search( $arg_key, $required_fields )]);
-					}
-				}
-
-				if ( ! empty( $required_fields ) ) {
-					$this->log( __( 'Missing required fields to create/update post', 'feed-pull' ), $source_feed_id, 'error' );
-					continue;
-				}
+				$new_post_args = $post[ 'post_fields' ];
 
 				$update = false;
 
@@ -360,7 +415,7 @@ class FP_Pull {
 				}
 
 				// Some post fields need special attention
-				if ( apply_filters( 'fp_format_post_dates', true, $new_post_args, $post, $source_feed_id ) ) {
+				if ( apply_filters( 'fp_format_post_dates', true, $new_post_args, $post[ 'item' ], $source_feed_id ) ) {
 					if ( ! empty( $new_post_args['post_date'] ) ) {
 						$new_post_args['post_date'] = date( 'Y-m-d H:i:s', strtotime( $new_post_args['post_date'] ) );
 					}
@@ -372,7 +427,7 @@ class FP_Pull {
 
 				// Handle author mapping
 				if ( ! empty( $new_post_args['post_author'] ) ) {
-					if ( apply_filters( 'fp_post_author_id_lookup', true, $new_post_args['post_author'], $post, $source_feed_id ) && ! is_numeric( $new_post_args['post_author'] ) ) {
+					if ( apply_filters( 'fp_post_author_id_lookup', true, $new_post_args['post_author'], $post[ 'item' ], $source_feed_id ) && ! is_numeric( $new_post_args['post_author'] ) ) {
 						$user = get_user_by( 'login', $new_post_args['post_author'] );
 
 						if ( $user ) {
@@ -381,7 +436,7 @@ class FP_Pull {
 					}
 				}
 
-				$post_args = apply_filters( 'fp_post_args', $new_post_args, $post, $source_feed_id );
+				$post_args = apply_filters( 'fp_post_args', $new_post_args, $post[ 'item' ], $source_feed_id );
 
 				if ( $update ) {
 					$new_post_id = wp_update_post( $post_args, true );
@@ -405,8 +460,7 @@ class FP_Pull {
 					}
 
 					// Set categories if they exist
-					// Todo: what if the post type does not support categories?
-					if ( ! empty( $post_categories ) ) {
+					if ( ! empty( $post_categories ) && is_object_in_taxonomy( $post_args[ 'post_type' ], 'category' ) ) {
 						$sanitized_post_categories = array_map( 'absint', $post_categories );
 
 						wp_set_object_terms( $new_post_id, apply_filters( 'fp_post_categories', $sanitized_post_categories ), 'category', $update );
@@ -425,53 +479,17 @@ class FP_Pull {
 					/**
 					 * Handle post meta field mappings
 					 */
-					foreach ( $meta_fields as $field ) {
-						$this->setupCustomNamespaces( $post, $custom_namespaces );
-
-						$values = $post->xpath( $field['source_field'] );
-
-						if ( empty( $values ) ) {
-							$this->log( sprintf( __( 'Xpath to source field returns nothing for %s', 'feed-pull' ), sanitize_text_field( $field['source_field'] ) ), $source_feed_id, 'warning', $new_post_id );
-						} else {
-							if ( count( $values ) > 1 ) {
-								$pre_filter_meta_value = array();
-
-								foreach ( $values as $value ) {
-									$pre_filter_meta_value[] = (string) $value;
-								}
-							} else {
-								$pre_filter_meta_value = (string) $values[0];
-							}
-
-							$meta_value = apply_filters( 'fp_pre_post_meta_value', $pre_filter_meta_value, $field, $post, $source_feed_id );
-						}
-
-						// Todo: sanitization?
-						update_post_meta( $new_post_id, $field['destination_field'], $meta_value );
+					foreach ( $post[ 'meta_fields' ] as $field => $meta_value ) {
+						update_post_meta( $new_post_id, $field[ 'destination_field' ], $meta_value );
 					}
 
 					/**
 					 * Handle taxonomy post mappings
 					 */
-					foreach ( $taxonomy_fields as $field ) {
-						$this->setupCustomNamespaces( $post, $custom_namespaces );
+					foreach ( $post[ 'taxonomy_fields' ] as $field => $terms ) {
+						$append = apply_filters( 'fp_tax_mapping_append', false, $field, $post[ 'item' ], $source_feed_id );
 
-						$values = $post->xpath( $field['source_field'] );
-
-						if ( empty( $values ) ) {
-							$this->log( sprintf( __( 'Xpath to source field returns nothing for %s', 'feed-pull' ), sanitize_text_field( $field['source_field'] ) ), $source_feed_id, 'warning', $new_post_id );
-						} else {
-							$pre_filter_terms = array();
-
-							foreach ( $values as $value ) {
-								$pre_filter_terms[] = (string) $value;
-							}
-
-							$terms = apply_filters( 'fp_pre_terms_set', $pre_filter_terms, $field, $post, $source_feed_id );
-						}
-
-						// Todo: sanitization?
-						$set_terms_result = wp_set_object_terms( $new_post_id, array_map( 'sanitize_text_field', $terms ), $field['destination_field'], apply_filters( 'fp_tax_mapping_append', false, $field, $post, $source_feed_id ) );
+						$set_terms_result = wp_set_object_terms( $new_post_id, array_map( 'sanitize_text_field', $terms ), $field['destination_field'], $append );
 
 						if ( is_wp_error( $set_terms_result ) ) {
 							$this->log( sprintf( __( 'Could not set terms: %s', 'feed-pull' ), $set_terms_result->get_error_message() ), $source_feed_id, 'warning', $new_post_id );
