@@ -253,7 +253,7 @@ class FP_Pull {
 							$pre_filter_meta_value = (string) $values[ 0 ];
 						}
 
-						$post[ 'meta_fields' ][] = apply_filters( 'fp_pre_post_meta_value', $pre_filter_meta_value, $field, $item, $source_feed_id );
+						$post[ 'meta_fields' ][ $field[ 'destination_field' ] ] = apply_filters( 'fp_pre_post_meta_value', $pre_filter_meta_value, $field, $item, $source_feed_id );
 					}
 				} elseif ( 'taxonomy' == $field[ 'mapping_type' ] ) {
 					$this->setupCustomNamespaces( $item, $custom_namespaces );
@@ -269,7 +269,7 @@ class FP_Pull {
 							$pre_filter_terms[] = (string) $value;
 						}
 
-						$post[ 'taxonomy_fields' ][] = apply_filters( 'fp_pre_terms_set', $pre_filter_terms, $field, $item, $source_feed_id );
+						$post[ 'taxonomy_fields' ][ $field[ 'destination_field' ] ] = apply_filters( 'fp_pre_terms_set', $pre_filter_terms, $field, $item, $source_feed_id );
 					}
 				} else {
 					$this->setupCustomNamespaces( $item, $custom_namespaces );
@@ -470,7 +470,7 @@ class FP_Pull {
 					 * Handle post meta field mappings
 					 */
 					foreach ( $post[ 'meta_fields' ] as $field => $meta_value ) {
-						update_post_meta( $new_post_id, $field[ 'destination_field' ], $meta_value );
+						update_post_meta( $new_post_id, $field, $meta_value );
 					}
 
 					/**
@@ -479,7 +479,7 @@ class FP_Pull {
 					foreach ( $post[ 'taxonomy_fields' ] as $field => $terms ) {
 						$append = apply_filters( 'fp_tax_mapping_append', false, $field, $post[ 'item' ], $source_feed_id );
 
-						$set_terms_result = wp_set_object_terms( $new_post_id, array_map( 'sanitize_text_field', $terms ), $field['destination_field'], $append );
+						$set_terms_result = wp_set_object_terms( $new_post_id, array_map( 'sanitize_text_field', $terms ), $field, $append );
 
 						if ( is_wp_error( $set_terms_result ) ) {
 							$this->log( sprintf( __( 'Could not set terms: %s', 'feed-pull' ), $set_terms_result->get_error_message() ), $source_feed_id, 'warning', $new_post_id );
