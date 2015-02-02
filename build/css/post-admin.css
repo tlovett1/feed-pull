@@ -12,7 +12,7 @@
 #fp_source_details .field-description {
   font-style: italic; }
 
-#visibility, #minor-publishing-actions {
+#visibility, #preview-action {
   display: none; }
 
 .misc-pub-fp-last-pulled label {
@@ -63,3 +63,5 @@
     text-align: center; }
     #fp_field_mapping table td.action, #fp_field_mapping table th.action, #fp_source_details table td.action, #fp_source_details table th.action {
       text-align: right; }
+
+/*# sourceMappingURL=post-admin.css.map */
