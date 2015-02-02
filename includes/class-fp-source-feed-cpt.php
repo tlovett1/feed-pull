@@ -588,7 +588,7 @@ class FP_Source_Feed_CPT {
 	 * @return array
 	 */
 	public function filter_columns( $columns ) {
-		$columns['fp_last_pull_time'] = __( 'Last Pulled On', 'my-reviews' );
+		$columns['fp_last_pull_time'] = __( 'Last Pulled On', 'feed-pull' );
 
 		// Move date column to the back
 		unset($columns['date']);
