@@ -63,19 +63,26 @@ class FP_AJAX {
 				$source_feed_id = (int) $_POST['source_feed_id'];
 			}
 
-			new FP_Pull( $source_feed_id );
+			if ( 'publish' != get_post_status( $source_feed_id ) ) {
+				$output['message'] = __( 'Feed must be published in order to do a manual pull.', 'feed-pull' );
 
-			$feed_cpt = FP_Source_Feed_CPT::factory();
+				$output['success'] = false;
+			}
+			else {
+				new FP_Pull( $source_feed_id );
 
-			$source_feed = get_post( $source_feed_id );
+				$feed_cpt = FP_Source_Feed_CPT::factory();
 
-			ob_start();
+				$source_feed = get_post( $source_feed_id );
 
-			$feed_cpt->meta_box_log( $source_feed );
+				ob_start();
 
-			$output['message'] = ob_get_clean();
+				$feed_cpt->meta_box_log( $source_feed );
 
-			$output['success'] = true;
+				$output['message'] = ob_get_clean();
+
+				$output['success'] = true;
+			}
 		}
 
 		wp_send_json( $output );
@@ -93,6 +100,7 @@ class FP_AJAX {
 
 		if ( check_ajax_referer( 'fp_pull_nonce', 'nonce', false ) ) {
 			$source_feed_id = null;
+
 			if ( isset( $_POST['source_feed_id'] ) ) {
 				$source_feed_id = (int) $_POST['source_feed_id'];
 			}
@@ -118,9 +126,6 @@ class FP_AJAX {
 			else {
 				// Get first post
 				$content = current( $posts );
-
-				// Convert SimpleXMLElement to object
-				$content = get_object_vars( $content );
 
 				$output['message'] = print_r( $content, true );
 
