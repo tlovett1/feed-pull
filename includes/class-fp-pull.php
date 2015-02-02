@@ -141,7 +141,7 @@ class FP_Pull {
 	 * Get source feed posts
 	 *
 	 * @param int $source_feed_id
-	 * @since 0.2.4
+	 * @since 1.0.0
 	 *
 	 * @return array<SimpleXMLElement>|boolean Feed posts array of SimpleXMLElement or false on error
 	 */

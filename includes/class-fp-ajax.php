@@ -84,7 +84,7 @@ class FP_AJAX {
 	/**
 	 * Do a feed pull test
 	 *
-	 * @since 0.1.0
+	 * @since 1.0.0
 	 * @return void
 	 */
 	public function action_pull_test() {
