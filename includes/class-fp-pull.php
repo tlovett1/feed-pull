@@ -89,11 +89,14 @@ class FP_Pull {
 	 * @return bool|int
 	 */
 	private function lookup_post_by_guid( $guid ) {
+		/**
+		 * @var $wpdb wpdb
+		 */
 		global $wpdb;
 
 		$sanitized_guid = sanitize_text_field( $guid );
 
-		$post_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = 'fp_guid' AND meta_value = '%s' LIMIT 1", $sanitized_guid ) );
+		$post_id = $wpdb->get_var( $wpdb->prepare( "SELECT post_id FROM $wpdb->postmeta WHERE meta_key = 'fp_guid' AND meta_value = %s LIMIT 1", $sanitized_guid ) );
 
 		if ( $post_id ) {
 			return $post_id;
@@ -105,8 +108,8 @@ class FP_Pull {
 	/**
 	 * Setup namespaces for SimpleXMLElement for next XPath query
 	 *
-	 * @param $feed
-	 * @param $custom_namespaces
+	 * @param SimpleXMLElement $feed
+	 * @param array $custom_namespaces
 	 * @return SimpleXMLElement
 	 */
 	public function setupCustomNamespaces( &$feed, $custom_namespaces ) {
