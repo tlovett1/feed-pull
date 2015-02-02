@@ -140,6 +140,46 @@ class FP_Pull {
 	}
 
 	/**
+	 * Get contents of feed file
+	 *
+	 * @param $url_or_path
+	 * @since 1.0.0
+	 * @return string|WP_Error
+	 */
+	public function fetch_feed( $url_or_path ) {
+
+		$file_contents = '';
+
+		if ( ! preg_match( '#^https?://#i', $url_or_path ) ) {
+			// if we have an absolute path, we can just use fopen. This is really only for unit testing
+
+			$file_handle = @fopen( $url_or_path, 'r' );
+
+			if ( ! $file_handle ) {
+				return new WP_Error( 'fp_bad_feed_path', __( 'Could not read contents of feed path', 'feed-pull' ) );
+			}
+
+			while ( ! feof( $file_handle ) ) {
+				$file_contents .= fgets( $file_handle );
+			}
+
+			fclose( $file_handle );
+
+		} else {
+			$request = wp_remote_get( $url_or_path );
+
+			if ( is_wp_error( $request ) ) {
+				return $request;
+			}
+
+			$file_contents = wp_remote_retrieve_body( $request );
+		}
+
+		return $file_contents;
+
+	}
+
+	/**
 	 * Get source feed items
 	 *
 	 * @param int $source_feed_id
@@ -172,7 +212,7 @@ class FP_Pull {
 			return false;
 		}
 
-		$raw_feed_contents = fp_fetch_feed( $feed_url );
+		$raw_feed_contents = $this->fetch_feed( $feed_url );
 
 		if ( is_wp_error( $raw_feed_contents ) ) {
 			$this->log( __( 'Could not fetch feed', 'feed-pull' ), $source_feed_id, 'error' );
@@ -531,35 +571,12 @@ class FP_Pull {
  *
  * @param $url_or_path
  * @since 0.1.5
- * @return array|string|WP_Error
+ * @return string|WP_Error
  */
 function fp_fetch_feed( $url_or_path ) {
-	if ( ! preg_match( '#^https?://#i', $url_or_path ) ) {
-		// if we have an absolute path, we can just use fopen. This is really only for unit testing
 
-		$file_handle = @fopen( $url_or_path, 'r' );
+	$feed_pull = new FP_Pull( false );
 
-		if ( ! $file_handle ) {
-			return new WP_Error( 'fp_bad_feed_path', __( 'Could not read contents of feed path', 'feed-pull' ) );
-		}
+	return $feed_pull->fetch_feed( $url_or_path );
 
-		$file_contents = '';
-
-		while ( ! feof( $file_handle ) ) {
-			$file_contents .= fgets( $file_handle );
-		}
-
-		fclose( $file_handle );
-
-		return $file_contents;
-
-	} else {
-		$request = wp_remote_get( $url_or_path );
-
-		if ( is_wp_error( $request ) ) {
-			return $request;
-		}
-
-		return wp_remote_retrieve_body( $request );
-	}
 }

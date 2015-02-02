@@ -30,7 +30,9 @@ class FP_AJAX {
 		$output['success'] = false;
 
 		if ( ! empty( $_POST['feed_url'] ) && check_ajax_referer( 'fp_get_namespaces_nonce', 'nonce', false ) ) {
-			$raw_feed_contents = fp_fetch_feed( $_POST['feed_url'] );
+			$feed_pull = new FP_Pull( false );
+
+			$raw_feed_contents = $feed_pull->fetch_feed( $_POST['feed_url'] );
 
 			if ( ! is_wp_error( $raw_feed_contents ) ) {
 				$feed = simplexml_load_string( $raw_feed_contents );
