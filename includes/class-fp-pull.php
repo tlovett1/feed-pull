@@ -149,12 +149,6 @@ class FP_Pull {
 	 */
 	public function get_feed_posts( $source_feed_id ) {
 
-		if ( get_the_ID() != $source_feed_id ) {
-			$feed = get_post( $source_feed_id );
-
-			setup_postdata( $feed );
-		}
-
 		$new_post_status = get_post_meta( $source_feed_id, 'fp_post_status', true );
 		$new_post_type = get_post_meta( $source_feed_id, 'fp_post_type', true );
 
@@ -362,10 +356,6 @@ class FP_Pull {
 		}
 
 		$source_feeds = new WP_Query( $args );
-
-		if ( ! $source_feeds->have_posts() ) {
-			return;
-		}
 
 		while ( $source_feeds->have_posts() ) {
 			$source_feeds->the_post();
