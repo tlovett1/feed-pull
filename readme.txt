@@ -4,7 +4,7 @@ Donate link: http://www.taylorlovett.com
 Tags: feeds, curation tool, syndication, rss feed, rss, atom feed, feed pull, feed reader, xml
 Requires at least: 3.0
 Tested up to: 4.1
-Stable tag: 0.2.4
+Stable tag: 1.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -42,6 +42,12 @@ pulled in the background. By default feed pulls occur once per hour.
 Super awesome configuration instructions are available on [Github](http://github.com/tlovett1/feed-pull).
 
 == Changelog ==
+
+= 1.0 =
+* Manual feed pull now refreshes log meta box using AJAX. This was accomplished through a number of abstractions. Props [sc0ttkclark](https://github.com/sc0ttkclark)
+* Text domain clean up
+* Improved error handling in AJAX feed pull. Props [sc0ttkclark](https://github.com/sc0ttkclark)
+
 = 0.2.4 =
 * Add action after handling a post for additional handling of post meta. Props [sc0ttclark](https://github.com/sc0ttkclark).
 

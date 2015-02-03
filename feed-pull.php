@@ -4,7 +4,7 @@
  * Plugin URI: http://www.taylorlovett.com
  * Description: Automatically turn feed content into posts.
  * Author: Taylor Lovett
- * Version: 0.2.4
+ * Version: 1.0
  * Author URI: http://www.taylorlovett.com
  */
 
