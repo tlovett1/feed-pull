@@ -186,8 +186,11 @@ class FP_Source_Feed_CPT {
 	?>
 		<p><?php _e( 'Click this button to manually pull from this feed otherwise you will have to wait for the cron job to execute.', 'feed-pull' ); ?></p>
 		<div class="button-container">
-			<input type="button" class="button" value="<?php _e( 'Do Feed Pull', 'feed-pull' ); ?>" id="fp_manual_pull">
+			<input type="button" class="button" value="<?php _e( 'Do Feed Pull', 'feed-pull' ); ?>" id="fp_manual_pull_run" />
+			<input type="button" class="button" value="<?php _e( 'Test Pull', 'feed-pull' ); ?>" id="fp_manual_pull_test" />
 			<img id="fp-spinner" src="<?php echo home_url( '/wp-includes/images/wpspin.gif' ); ?>">
+
+			<div id="fp_manual_content"></div>
 		</div>
 	<?php
 	}
@@ -585,7 +588,7 @@ class FP_Source_Feed_CPT {
 	 * @return array
 	 */
 	public function filter_columns( $columns ) {
-		$columns['fp_last_pull_time'] = __( 'Last Pulled On', 'my-reviews' );
+		$columns['fp_last_pull_time'] = __( 'Last Pulled On', 'feed-pull' );
 
 		// Move date column to the back
 		unset($columns['date']);

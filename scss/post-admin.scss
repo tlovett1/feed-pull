@@ -20,7 +20,7 @@
 
 }
 
-#visibility, #minor-publishing-actions {
+#visibility, #preview-action {
 	display: none;
 }
 
@@ -61,6 +61,14 @@
 			vertical-align: middle;
 			opacity: 0;
 			margin-left: .3em;
+		}
+
+		#fp_manual_content {
+			display: none;
+			margin-top: 20px;
+			overflow-x: scroll;
+			font-family: monospace;
+			white-space: pre;
 		}
 	}
 }
