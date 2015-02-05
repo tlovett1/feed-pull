@@ -166,7 +166,9 @@ class FP_Pull {
 			fclose( $file_handle );
 
 		} else {
-			$request = wp_remote_get( $url_or_path );
+			$args = apply_filters( 'fp_fetch_feed_request_args', array(), $url_or_path );
+
+			$request = wp_remote_get( $url_or_path, $args );
 
 			if ( is_wp_error( $request ) ) {
 				return $request;
