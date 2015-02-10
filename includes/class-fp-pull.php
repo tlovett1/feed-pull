@@ -227,7 +227,7 @@ class FP_Pull {
 		// Suppress all warnings/errors for this
 		$feed = @simplexml_load_string( $raw_feed_contents );
 
-		if ( ! $feed ) {
+		if ( false === $feed ) {
 			$this->log( __( 'Feed could not be parsed', 'feed-pull' ), $source_feed_id, 'error' );
 
 			$this->handle_feed_log( $source_feed_id );
