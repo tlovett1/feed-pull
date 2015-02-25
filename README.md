@@ -6,8 +6,8 @@ be syndicated into WordPress. You can map feed attributes to post fields or post
 to any post type you want. The plugin comes with a convenient settings page so you can configure things like when feeds
 are syndicated.
 
-Feed Pull vs. Syndication
----------------
+## Feed Pull vs. Syndication
+
 Feed Pull takes a lot of concepts from Syndication. Syndication is a more advanced plugin that offers more than just
 feed pulling. Here are some differences between the two plugins
 * Feed Pull is a plugin for pulling content out of XML feeds. Syndication has feed pulling as well as content
@@ -20,15 +20,15 @@ field mapping. However, Feed Pull probably has everything you need and is very e
 * Feed Pull allows you to schedule content pulling in the future.
 * Feed Pull allows you to do manual pulls using AJAX rather than a sometimes frustrating one-time cron job.
 
-Setup Instructions
---------------
+## Setup Instructions
+
 1. Upload and activate the plugin.
 1. A "Feed Pull" settings page has been added as a sub-item of the "Settings" admin menu.
 1. Make sure "Pull feeds" is set to yes. Feeds are syndicated using WordPress cron. This means your content will be
 pulled in the background. By default feed pulls occur once per hour.
 
-Configure a Feed
---------------
+## Configure a Feed
+
 1. After activating the plugin, you should now see a "Source Feeds" menu item in your admin menu. Add a new source
 feed.
 1. Enter the URL of any XML feed in the feed url input box.
@@ -41,8 +41,8 @@ self-explanatory. A GUID is a unique identifier for posts. Items within your fee
 permalink that you can map to the post GUID. GUID's allow the plugin to determine if a piece of content has already
 been syndicated or not. There is an in-depth section on field mapping below.
 
-Atom Feeds and Custom Namespaces
---------------
+## Atom Feeds and Custom Namespaces
+
 Sometimes feeds make use of prefixes on certain elements. This happens for a variety of reasons; one is to avoid
 conflicts. Prefixes should have a namespace defined somewhere using an "xmlns" attribute. Feed Pull lets you
 define custom namespaces. This feature is advanced and not needed in most cases.
@@ -55,8 +55,8 @@ You should use the prefix in your XPath queries. For example, instead of "//feed
 
 You can learn more about namespaces here: [http://www.w3schools.com/xml/xml_namespaces.asp](http://www.w3schools.com/xml/xml_namespaces.asp)
 
-Field Mapping
---------------
+## Field Mapping
+
 When configuring a source feed, you need to tell Feed Pull which XML nodes map to where within WordPress. Here are the current
 mapping types supported by the plugin:
 
@@ -96,12 +96,56 @@ Like post meta there are no required taxonomy mappings. Let's create one anyway!
 to map to the "post_tag" taxonomy in WordPress. Therefore we create a new field mapping row with "tag" as "Source Field",
 "post_tag" as "New Post Location", and "Taxonomy" as "Mapping Type".
 
-Testing with Dockunit
---------------
+## Development
+
+### Setup
+
+Follow the configuration instructions above to setup the plugin.
+
+### Testing
+
+Within the terminal change directories to the plugin folder. Initialize your testing environment by running the
+following command:
+
+For VVV users:
+```
+bash bin/install-wp-tests.sh wordpress_test root root localhost latest
+```
+
+For VIP Quickstart users:
+```
+bash bin/install-wp-tests.sh wordpress_test root '' localhost latest
+```
+
+where:
+
+* ```wordpress_test``` is the name of the test database (all data will be deleted!)
+* ```root``` is the MySQL user name
+* ```root``` is the MySQL user password (if you're running VVV). Blank if you're running VIP Quickstart.
+* ```localhost``` is the MySQL server host
+* ```latest``` is the WordPress version; could also be 3.7, 3.6.2 etc.
+
+
+Run the plugin test suite:
+
+```bash
+phpunit
+```
+
+##### Dockunit
 
 This plugin contains a valid [Dockunit](https://www.npmjs.com/package/dockunit) file for running unit tests across a variety of environments locally (PHP 5.2 and 5.5). You can use Dockunit (after installing it via npm) by running:
 
 ```bash
 dockunit
 ```
+
+### Issues
+
+If you identify any errors or have an idea for improving the plugin, please [open an issue](https://github.com/tlovett1/feed-pull/issues?state=open).
+
+
+## License
+
+Feed Pull is free software; you can redistribute it and/or modify it under the terms of the [GNU General Public License](http://www.gnu.org/licenses/gpl-2.0.html) as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.
 
