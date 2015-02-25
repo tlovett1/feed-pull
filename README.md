@@ -96,3 +96,12 @@ Like post meta there are no required taxonomy mappings. Let's create one anyway!
 to map to the "post_tag" taxonomy in WordPress. Therefore we create a new field mapping row with "tag" as "Source Field",
 "post_tag" as "New Post Location", and "Taxonomy" as "Mapping Type".
 
+Testing with Dockunit
+--------------
+
+This plugin contains a valid [Dockunit](https://www.npmjs.com/package/dockunit) file for running unit tests across a variety of environments locally (PHP 5.2 and 5.5). You can use Dockunit (after installing it via npm) by running:
+
+```bash
+dockunit
+```
+
