@@ -69,7 +69,10 @@ class FP_AJAX {
 				$output['success'] = false;
 			}
 			else {
-				new FP_Pull( $source_feed_id );
+				new FP_Pull( false );
+				
+				// Do manual pull
+				$this->do_pull( $source_feed_id, true );
 
 				$feed_cpt = FP_Source_Feed_CPT::factory();
 
