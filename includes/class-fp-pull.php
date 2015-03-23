@@ -123,7 +123,6 @@ class FP_Pull {
 	 */
 	private function handle_feed_log( $source_feed_id ) {
 		if ( apply_filters( 'fp_log_last_pull', true, $source_feed_id ) ) {
-			// Todo: sanitiziation?
 			update_post_meta( $source_feed_id, 'fp_last_pull_log', $this->get_log( $source_feed_id ) );
 			update_post_meta( $source_feed_id, 'fp_last_pull_time', current_time( 'timestamp' ) );
 
@@ -401,7 +400,6 @@ class FP_Pull {
 							$meta_value = apply_filters( 'fp_pre_post_meta_value', $pre_filter_meta_value, $field, $post, $source_feed_id );
 						}
 
-						// Todo: sanitization?
 						update_post_meta( $new_post_id, $field['destination_field'], $meta_value );
 					}
 
@@ -425,7 +423,6 @@ class FP_Pull {
 							$terms = apply_filters( 'fp_pre_terms_set', $pre_filter_terms, $field, $post, $source_feed_id );
 						}
 
-						// Todo: sanitization?
 						$set_terms_result = wp_set_object_terms( $new_post_id, array_map( 'sanitize_text_field', $terms ), $field['destination_field'], apply_filters( 'fp_tax_mapping_append', false, $field, $post, $source_feed_id ) );
 
 						if ( is_wp_error( $set_terms_result ) ) {
