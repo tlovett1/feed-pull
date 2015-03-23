@@ -1,10 +1,10 @@
 === Feed Pull ===
-Contributors: tlovett1
+Contributors: tlovett1, 10up
 Donate link: http://www.taylorlovett.com
 Tags: feeds, curation tool, syndication, rss feed, rss, atom feed, feed pull, feed reader, xml
 Requires at least: 3.0
-Tested up to: 4.1
-Stable tag: 0.2.4
+Tested up to: 4.2
+Stable tag: 0.2.5
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -42,6 +42,12 @@ pulled in the background. By default feed pulls occur once per hour.
 Super awesome configuration instructions are available on [Github](http://github.com/tlovett1/feed-pull).
 
 == Changelog ==
+
+= 0.2.5 =
+* Use {{ }} style Backbone templates in case of ASP style PHP tags
+* Fix some minor preview action css
+* Clean up commenting
+
 = 0.2.4 =
 * Add action after handling a post for additional handling of post meta. Props [sc0ttclark](https://github.com/sc0ttkclark).
 
