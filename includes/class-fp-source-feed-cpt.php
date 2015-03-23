@@ -280,12 +280,12 @@ class FP_Source_Feed_CPT {
 		</p>
 
 		<script type="text/underscores" id='namespace-row-template'>
-			<tr data-namespace-row-id="<%- rowID %>">
+			<tr data-namespace-row-id="{{ rowID }}">
 				<td>
-					<input type="text" name="fp_custom_namespaces[<%- rowID %>][namespace_prefix]" value="<%- namespace_prefix %>">
+					<input type="text" name="fp_custom_namespaces[{{ rowID }}][namespace_prefix]" value="{{ namespace_prefix }}">
 				</td>
 				<td>
-					<input type="text" name="fp_custom_namespaces[<%- rowID %>][namespace_url]" value="<%- namespace_url %>">
+					<input type="text" name="fp_custom_namespaces[{{ rowID }}][namespace_url]" value="{{ namespace_url }}">
 				</td>
 				<td class="action">
 					<input type="button" value="<?php _e( 'Delete', 'feed-pull' ); ?>" class="button delete">
@@ -455,15 +455,15 @@ class FP_Source_Feed_CPT {
 		</table>
 
 		<script type="text/underscores" id='mapping-row-template'>
-			<tr data-mapping-row-id="<%- rowID %>">
+			<tr data-mapping-row-id="{{ rowID }}">
 				<td>
-					<input type="text" name="fp_field_map[<%- rowID %>][source_field]" value="">
+					<input type="text" name="fp_field_map[{{ rowID }}][source_field]" value="">
 				</td>
 				<td>
-					<input type="text" name="fp_field_map[<%- rowID %>][destination_field]" value="">
+					<input type="text" name="fp_field_map[{{ rowID }}][destination_field]" value="">
 				</td>
 				<td>
-					<select name="fp_field_map[<%- rowID %>][mapping_type]">
+					<select name="fp_field_map[{{ rowID }}][mapping_type]">
 						<option value="post_field"><?php _e( 'Post Field', 'feed-pull' ); ?></option>
 						<option value="post_meta"><?php _e( 'Post Meta', 'feed-pull' ); ?></option>
 						<option value="taxonomy"><?php _e( 'Taxonomy', 'feed-pull' ); ?></option>

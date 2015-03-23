@@ -10,6 +10,12 @@
 
         var _instance = null;
 
+		var templateOptions = {
+			evaluate: /<#([\s\S]+?)#>/g,
+			interpolate: /\{\{\{([\s\S]+?)\}\}\}/g,
+			escape: /\{\{([^\}]+?)\}\}(?!\})/g
+		};
+
         /**
          * Setup functionality for post page
          */
@@ -59,7 +65,7 @@
 
             function handleFieldAddNew( event ) {
                 var nextMappingRowID = parseInt( getLastMappingRowID() ) + 1;
-                var newRow = _.template( mappingRowTemplate, { rowID : nextMappingRowID } );
+                var newRow = _.template( mappingRowTemplate, { rowID : nextMappingRowID }, templateOptions );
                 $mappingTableBody.append( newRow );
             }
 
@@ -69,7 +75,7 @@
                     rowID : nextNamespaceRowID,
                     'namespace_prefix' : '',
                     'namespace_url' : ''
-                } );
+                }, templateOptions );
                 $namespaceTableBody.append( newRow );
 
                 $namespaceTable.show();
@@ -161,7 +167,7 @@
                                     'rowID' : nextNamespaceRowID,
                                     'namespace_prefix' : 'default',
                                     'namespace_url' : data.namespaces['']
-                                } );
+                                }, templateOptions );
 
                                 $namespaceTableBody.append( newRow );
 
