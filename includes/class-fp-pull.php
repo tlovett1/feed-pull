@@ -403,7 +403,7 @@ class FP_Pull {
 	 * @param boolean $manual_pull Is this a manual pull (bypass feed pull enabled option)
 	 * @since 0.1.0
 	 */
-	private function do_pull( $source_feed_id = null, $manual_pull = false ) {
+	public function do_pull( $source_feed_id = null, $manual_pull = false ) {
 
 		// Do nothing if feed pulling is not turned on
 		$option = fp_get_option();
