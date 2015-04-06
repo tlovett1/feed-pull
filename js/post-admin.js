@@ -27,7 +27,10 @@
             var $namespaceTableBody = $namespaceTable.find( 'tbody' );
             var $mappingTable = $mappingMetaBox.find( 'table' );
             var $mappingTableBody = $mappingTable.find( 'tbody' );
-            var $manualPullButton = $( '#fp_manual_pull' );
+            var $manualPullButton = $( '#fp_manual_pull_run' );
+            var $manualTestButton = $( '#fp_manual_pull_test' );
+            var $manualTestContent = $( '#fp_manual_content' );
+            var $pullLog = $( '#fp_log .inside' );
             var $postIDField = $( '#post_ID' );
             var $manualPullSpinner = $( '#fp-spinner' );
             var $feedURLField = $( '#fp_feed_url' );
@@ -79,6 +82,13 @@
             }
 
             function doManualPull() {
+                // Remove test content
+                $manualTestContent.hide();
+                $manualTestContent.html( '' );
+
+                $pullLog.hide();
+                $pullLog.html( '' );
+
                 $manualPullSpinner.animate( { 'opacity' : 1 } );
 
                 $.ajax( {
@@ -90,7 +100,38 @@
                         'nonce' : FP_Settings.pull_nonce,
                         'source_feed_id' : $postIDField.val()
                     }
-                } ).always( function() {
+                } ).always( function( data ) {
+                    if ( data && 'undefined' != typeof data.success ) {
+                        $pullLog.html( data.message );
+                        $pullLog.fadeIn( 'fast' );
+                    }
+
+                    $manualPullSpinner.animate( { 'opacity' : 0 } );
+                } );
+            }
+
+            function doTestPull() {
+                // Remove test content
+                $manualTestContent.hide();
+                $manualTestContent.html( '' );
+
+                $manualPullSpinner.animate( { 'opacity' : 1 } );
+
+                $.ajax( {
+                    'type' : 'post',
+                    'url' : ajaxurl,
+                    'dataType' : 'json',
+                    'data' : {
+                        'action' : 'pull_test',
+                        'nonce' : FP_Settings.pull_nonce,
+                        'source_feed_id' : $postIDField.val()
+                    }
+                } ).always( function( data ) {
+                    if ( data && 'undefined' != typeof data.success ) {
+                        $manualTestContent.html( data.message );
+                        $manualTestContent.fadeIn( 'fast' );
+                    }
+
                     $manualPullSpinner.animate( { 'opacity' : 0 } );
                 } );
             }
@@ -112,7 +153,7 @@
 
                             $customNamespacesDescription.html( FP_Settings.unprefixed_root_namespace );
 
-                            var add_namespace = true
+                            var add_namespace = true;
 
                             $namespaceTableBody.find( 'input[type=text]').each( function() {
                                 if ( $( this ).val() == 'default' || $( this).val() == data.namespaces[''] ) {
@@ -151,6 +192,7 @@
             $sourceMetaBox.on( 'click', 'input.add-new', handleNamespaceAddNew );
             $feedURLField.on( 'blur', handlePossibleUnprefixedNamespace );
             $manualPullButton.on( 'click', doManualPull );
+            $manualTestButton.on( 'click', doTestPull );
         }
 
 

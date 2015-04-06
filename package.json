@@ -1,6 +1,6 @@
 {
     "name": "feed-pull-wp",
-    "version": "0.2.4",
+    "version": "1.0.0",
     "devDependencies": {
         "grunt": "~0.4.2",
         "grunt-contrib-watch": "0.5.3",
