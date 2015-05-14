@@ -386,19 +386,20 @@ class FP_Pull {
 
 						if ( empty( $values ) ) {
 							$this->log( sprintf( __( 'Xpath to source field returns nothing for %s', 'feed-pull' ), sanitize_text_field( $field['source_field'] ) ), $source_feed_id, 'warning', $new_post_id );
-						} else {
-							if ( count( $values ) > 1 ) {
-								$pre_filter_meta_value = array();
-
-								foreach ( $values as $value ) {
-									$pre_filter_meta_value[] = (string) $value;
-								}
-							} else {
-								$pre_filter_meta_value = (string) $values[0];
-							}
-
-							$meta_value = apply_filters( 'fp_pre_post_meta_value', $pre_filter_meta_value, $field, $post, $source_feed_id );
+							continue;
 						}
+					
+						if ( count( $values ) > 1 ) {
+							$pre_filter_meta_value = array();
+
+							foreach ( $values as $value ) {
+								$pre_filter_meta_value[] = (string) $value;
+							}
+						} else {
+							$pre_filter_meta_value = (string) $values[0];
+						}
+
+						$meta_value = apply_filters( 'fp_pre_post_meta_value', $pre_filter_meta_value, $field, $post, $source_feed_id );
 
 						update_post_meta( $new_post_id, $field['destination_field'], $meta_value );
 					}
