@@ -293,7 +293,7 @@ class FP_Pull {
 				do_action( 'fp_handle_post', $new_post_args['guid'], $source_feed_id );
 
 				// Check if post exists by guid
-				$existing_post_id = $this->lookup_post_by_guid( $new_post_args['guid'] );
+				$existing_post_id = FP_Pull::lookup_post_by_guid( $new_post_args['guid'] );
 
 				if ( ! empty( $existing_post_id ) ) {
 					if ( $allow_updates ) {
