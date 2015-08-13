@@ -84,7 +84,7 @@ class FP_Pull {
 	 * @since 0.1.0
 	 * @return bool|int
 	 */
-	private function lookup_post_by_guid( $guid ) {
+	public static function lookup_post_by_guid( $guid ) {
 		global $wpdb;
 
 		$sanitized_guid = sanitize_text_field( $guid );
@@ -225,6 +225,9 @@ class FP_Pull {
 			if ( empty( $posts ) ) {
 				$this->log( __( 'No items in feed', 'feed-pull' ), $source_feed_id, 'warning' );
 				$this->handle_feed_log( $source_feed_id );
+
+				do_action( 'fp_no_feed_items', $source_feed_id );
+
 				continue;
 			}
 
@@ -287,8 +290,10 @@ class FP_Pull {
 
 				$update = false;
 
+				do_action( 'fp_handle_post', $new_post_args['guid'], $source_feed_id );
+
 				// Check if post exists by guid
-				$existing_post_id = $this->lookup_post_by_guid( $new_post_args['guid'] );
+				$existing_post_id = FP_Pull::lookup_post_by_guid( $new_post_args['guid'] );
 
 				if ( ! empty( $existing_post_id ) ) {
 					if ( $allow_updates ) {

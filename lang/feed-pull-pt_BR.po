@@ -1,0 +1,438 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Feed Pull\n"
+"POT-Creation-Date: 2014-07-09 00:12-0500\n"
+"PO-Revision-Date: 2015-04-04 08:04-0300\n"
+"Last-Translator: daniel tygel <dtygel@eita.org.br>\n"
+"Language-Team: daniel tygel\n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.5.4\n"
+"X-Poedit-Basepath: ../\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-KeywordsList: _e;__\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: includes/class-fp-cron.php:35
+msgid "Custom Feed Pull Interval"
+msgstr "Intervalo de recolhimento customizado de feeds"
+
+#: includes/class-fp-feed-pull.php:67
+msgid "Feed Pull"
+msgstr "Recolhimento de feeds"
+
+#: includes/class-fp-feed-pull.php:123
+msgid "Feed Pull Settings"
+msgstr "Configurações do recolhimento de feeds"
+
+#: includes/class-fp-feed-pull.php:130
+msgid "Pull feeds on this interval:"
+msgstr "Recolher feeds neste intervalo:"
+
+#: includes/class-fp-feed-pull.php:133
+msgid "(seconds)"
+msgstr "(segundos)"
+
+#: includes/class-fp-feed-pull.php:137
+msgid "Pull feeds:"
+msgstr "Recolher feeds:"
+
+#: includes/class-fp-feed-pull.php:140
+#: includes/class-fp-source-feed-cpt.php:336
+msgid "No"
+msgstr "Não"
+
+#: includes/class-fp-feed-pull.php:141
+#: includes/class-fp-source-feed-cpt.php:337
+msgid "Yes"
+msgstr "Sim"
+
+#: includes/class-fp-feed-pull.php:146
+msgid "Reset deleted syndicated posts:"
+msgstr "Resetar posts sindicados que foram removidos:"
+
+#: includes/class-fp-feed-pull.php:148
+msgid "Reset Deleted Posts"
+msgstr "Resetar posts removidos"
+
+#: includes/class-fp-feed-pull.php:150
+msgid ""
+"Feed Pull won't resync posts that have been deleted. If you want to resync "
+"posts that have been deleted, you can reset that cache."
+msgstr ""
+"O Recolhedor de Feeds não vai recolher novamente posts que foram apagados. "
+"Se você quiser recolher novamente posts que foram apagados, você pode "
+"resetar este cache."
+
+#: includes/class-fp-pull.php:173
+msgid "Pulling feed"
+msgstr "Recolhendo feeds"
+
+#: includes/class-fp-pull.php:188
+msgid "No xpath to post items"
+msgstr "Não há xpath para os itens postados"
+
+#: includes/class-fp-pull.php:194
+msgid "No feed URL"
+msgstr "Não há URL do feed"
+
+#: includes/class-fp-pull.php:200
+msgid "No field map"
+msgstr "Não há mapa de campos"
+
+#: includes/class-fp-pull.php:208
+msgid "Could not fetch feed"
+msgstr "Não consegui pegar este feed"
+
+#: includes/class-fp-pull.php:217
+msgid "Feed could not be parsed"
+msgstr "O feed não pôde ser lido"
+
+#: includes/class-fp-pull.php:227
+msgid "No items in feed"
+msgstr "Não há itens no feed"
+
+#: includes/class-fp-pull.php:259 includes/class-fp-pull.php:389
+#: includes/class-fp-pull.php:417
+#, php-format
+msgid "Xpath to source field returns nothing for %s"
+msgstr "O Xpath para o campo fonte não retorna nada para %s"
+
+#: includes/class-fp-pull.php:285
+msgid "Missing required fields to create/update post"
+msgstr "Faltam campos obrigatórios para criar/atualizar post"
+
+#: includes/class-fp-pull.php:297
+#, php-format
+msgid "Attempting to update post with guid %s"
+msgstr "Tentando atualizar post com guid %s"
+
+#: includes/class-fp-pull.php:301
+msgid "Post already exists and updates are not allowed."
+msgstr "O post já existe e atualizações não são permitidas"
+
+#: includes/class-fp-pull.php:310
+msgid "A post with this GUID has already been syndicated and deleted."
+msgstr "Um post com este GUID já foi sindicado e removido."
+
+#: includes/class-fp-pull.php:314
+#, php-format
+msgid "Attempting to create post with guid %s"
+msgstr "Tentando criar post com guid %s"
+
+#: includes/class-fp-pull.php:349
+#, php-format
+msgid "Could not update post: %s"
+msgstr "Não consegui atualizar post: %s"
+
+#: includes/class-fp-pull.php:351
+#, php-format
+msgid "Could not create post: %s"
+msgstr "Não consegui criar post: %s"
+
+#: includes/class-fp-pull.php:356
+msgid "Updated post"
+msgstr "Post atualizado"
+
+#: includes/class-fp-pull.php:359
+msgid "Created new post"
+msgstr "Novo post criado"
+
+#: includes/class-fp-pull.php:432
+#, php-format
+msgid "Could not set terms: %s"
+msgstr "Não consegui definir termos: %s"
+
+#: includes/class-fp-pull.php:462
+msgid "Could not read contents of feed path"
+msgstr "Não consegui ler os conteúdos do caminho (path) do feed"
+
+#: includes/class-fp-source-feed-cpt.php:80
+#: includes/class-fp-source-feed-cpt.php:250
+msgid ""
+"Define custom namespaces for use in XPath queries. This is totally optional "
+"and probably not necessary for most feeds."
+msgstr ""
+"Defina domínios de nomes customizados para usar nas solicitações XPath. Isso "
+"é totalmente opcional e provavelmente não necessário para a maioria dos "
+"feeds."
+
+#: includes/class-fp-source-feed-cpt.php:81
+msgid ""
+"Usually custom namespaces don't need to be defined, however your feed "
+"contains a document level unprefixed namespace which doesn't work well with "
+"XPath. You should define a namespace and prefix all your XPath queries with "
+"it. For example instead of //feed/entry, use //default:feed/default:entry. "
+"Your custom namespace should be automatically defined below."
+msgstr ""
+"Normalmente domínios de nome customizados não precisam ser definidos. "
+"Entretanto, seu feed tem um domínio de nome sem prefixo a nível de documento "
+"que não funciona bem com XPath. Você deve definir um domínio de nome e "
+"prefixar todas as suas solicitações XPath com este prefixo. Por exemplo, ao "
+"invés de //feed/item, use //default:feed/defaul:item. Seu domínio de nome "
+"customizado pode ser definido automaticamente abaixo."
+
+#: includes/class-fp-source-feed-cpt.php:115
+#, php-format
+msgid "Source feed updated. <a href=\"%s\">View source feed</a>"
+msgstr "Feed fonte atualizado. <a href=\"%s\">Ver fonte de feed</a>"
+
+#: includes/class-fp-source-feed-cpt.php:116
+msgid "Custom field updated."
+msgstr "Campo customizado atualizado."
+
+#: includes/class-fp-source-feed-cpt.php:117
+msgid "Custom field deleted."
+msgstr "Campo customizado apagado."
+
+#: includes/class-fp-source-feed-cpt.php:118
+msgid "Source feed updated."
+msgstr "Feed de fonte atualizado"
+
+#: includes/class-fp-source-feed-cpt.php:119
+#, php-format
+msgid " Content feed restored to revision from %s"
+msgstr "Conteúdo do feed restaurado para revisão de %s"
+
+#: includes/class-fp-source-feed-cpt.php:120
+#, php-format
+msgid "Source feed published. <a href=\"%s\">View source feed</a>"
+msgstr "Feed fonte publicado. <a href=\"%s\">Ver feed fonte</a>"
+
+#: includes/class-fp-source-feed-cpt.php:121
+msgid "Source feed saved."
+msgstr "Feed fonte salvo."
+
+#: includes/class-fp-source-feed-cpt.php:122
+#, php-format
+msgid ""
+"Source feed submitted. <a target=\"_blank\" href=\"%s\">Preview source feed</"
+"a>"
+msgstr ""
+"Feed fonte enviado. <a target=\"_blank\" href=\"%s\">Ver feed fonde</a>"
+
+#: includes/class-fp-source-feed-cpt.php:123
+#, php-format
+msgid ""
+"Source feed scheduled for: <strong>%1$s</strong>. <a target=\"_blank\" href="
+"\"%2$s\">Preview source feed</a>"
+msgstr ""
+"Feed fonte agendado para: <strong>%1$s</strong>. <a target=\"_blank\" href="
+"\"%2$s\">Ver feed fonte</a>"
+
+#: includes/class-fp-source-feed-cpt.php:124
+msgid "M j, Y @ G:i"
+msgstr "j \\d\\e F, Y à\\s G\\hi"
+
+#: includes/class-fp-source-feed-cpt.php:125
+#, php-format
+msgid ""
+"Source feed draft updated. <a target=\"_blank\" href=\"%s\">Preview source "
+"feed</a>"
+msgstr ""
+"Rascunho do feed fonte atualizado. <a target=\"_blank\" href=\"%s\">Ver feed "
+"fonte</a>"
+
+#: includes/class-fp-source-feed-cpt.php:139
+#: includes/class-fp-source-feed-cpt.php:151
+msgid "Source Feeds"
+msgstr "Feeds fonte"
+
+#: includes/class-fp-source-feed-cpt.php:140
+msgid "Source Feed"
+msgstr "Feed fonte"
+
+#: includes/class-fp-source-feed-cpt.php:141
+#: includes/class-fp-source-feed-cpt.php:476
+msgid "Add New"
+msgstr "Adicionar novo"
+
+#: includes/class-fp-source-feed-cpt.php:142
+msgid "Add New Source Feed"
+msgstr "Adicionar novo feed fonte"
+
+#: includes/class-fp-source-feed-cpt.php:143
+msgid "Edit Source Feed"
+msgstr "Editar feed fonte"
+
+#: includes/class-fp-source-feed-cpt.php:144
+msgid "New Source Feed"
+msgstr "Novo feed fonte"
+
+#: includes/class-fp-source-feed-cpt.php:145
+msgid "All Source Feeds"
+msgstr "Todos os feeds fonte"
+
+#: includes/class-fp-source-feed-cpt.php:146
+msgid "View Source Feed"
+msgstr "Ver feed fonte"
+
+#: includes/class-fp-source-feed-cpt.php:147
+msgid "Search Source Feeds"
+msgstr "Buscar feeds fonte"
+
+#: includes/class-fp-source-feed-cpt.php:148
+msgid "No Source feeds found"
+msgstr "Não encontrei nenhum feed fonte"
+
+#: includes/class-fp-source-feed-cpt.php:149
+msgid "No source feeds found in trash"
+msgstr "Não há feeds fonte na lixeira"
+
+#: includes/class-fp-source-feed-cpt.php:178
+msgid "Source Feed Details"
+msgstr "Detalhes do feed fonte"
+
+#: includes/class-fp-source-feed-cpt.php:179
+msgid "New Content Details"
+msgstr "Detalhes de novo conteúdo"
+
+#: includes/class-fp-source-feed-cpt.php:180
+msgid "Field Mapping"
+msgstr "Mapeamento dos campos"
+
+#: includes/class-fp-source-feed-cpt.php:181
+msgid "Pull Log"
+msgstr "Resgatar log"
+
+#: includes/class-fp-source-feed-cpt.php:182
+msgid "Manual Pull"
+msgstr "Recolhimento manual"
+
+#: includes/class-fp-source-feed-cpt.php:187
+msgid ""
+"Click this button to manually pull from this feed otherwise you will have to "
+"wait for the cron job to execute."
+msgstr ""
+"Clique neste botão para recolher manualmente os itens deste feed. Caso "
+"contrário, você terá que esperar a tarefa cron ser executada."
+
+#: includes/class-fp-source-feed-cpt.php:189
+msgid "Do Feed Pull"
+msgstr "Recolher feeds"
+
+#: includes/class-fp-source-feed-cpt.php:207
+msgid "Enter source feed name"
+msgstr "Entre com o nome do feed fonte"
+
+#: includes/class-fp-source-feed-cpt.php:238
+msgid "Tell us about the feed from which we are pulling."
+msgstr "Fale um pouco sobre o feed do qual vamos recolher itens."
+
+#: includes/class-fp-source-feed-cpt.php:240
+msgid "Source Feed URL:"
+msgstr "URL do feed fonte:"
+
+#: includes/class-fp-source-feed-cpt.php:243
+msgid "XPath to Posts:"
+msgstr "XPath para posts:"
+
+#: includes/class-fp-source-feed-cpt.php:244
+msgid "(i.e. channel/item)"
+msgstr "(i.e. nome/item)"
+
+#: includes/class-fp-source-feed-cpt.php:248
+msgid "Custom Namespaces:"
+msgstr "Domínios de nome customizados:"
+
+#: includes/class-fp-source-feed-cpt.php:254
+msgid "Namespace Prefix"
+msgstr "Prefixo do domínio de nome"
+
+#: includes/class-fp-source-feed-cpt.php:255
+msgid "Namespace URL"
+msgstr "URL do domínio de nome"
+
+#: includes/class-fp-source-feed-cpt.php:269
+#: includes/class-fp-source-feed-cpt.php:288
+#: includes/class-fp-source-feed-cpt.php:426
+#: includes/class-fp-source-feed-cpt.php:447
+#: includes/class-fp-source-feed-cpt.php:470
+msgid "Delete"
+msgstr "Remover"
+
+#: includes/class-fp-source-feed-cpt.php:276
+msgid "Add Custom Namespace"
+msgstr "Adicionar domínio de nome customizado"
+
+#: includes/class-fp-source-feed-cpt.php:316
+msgid "Configure the content we pull from the feed."
+msgstr "Configurar o conteúdo que vamos recolher do feed."
+
+#: includes/class-fp-source-feed-cpt.php:318
+msgid "Post Type:"
+msgstr "Tipo de post:"
+
+#: includes/class-fp-source-feed-cpt.php:326
+msgid "Post Status:"
+msgstr "Status do post:"
+
+#: includes/class-fp-source-feed-cpt.php:334
+msgid "Update Existing Posts:"
+msgstr "Atualizar posts existentes:"
+
+#: includes/class-fp-source-feed-cpt.php:343
+msgid "Automatically Add New Posts to Categories:"
+msgstr "Adicionar automaticamente os novos posts a categorias:"
+
+#: includes/class-fp-source-feed-cpt.php:365
+msgid "No pulls for this source feed yet."
+msgstr "Ainda não foi feito nenhum recolhimento deste feed fonte."
+
+#: includes/class-fp-source-feed-cpt.php:375
+msgid "Edit Post"
+msgstr "Editar post"
+
+#: includes/class-fp-source-feed-cpt.php:397
+msgid "Map fields from your source feed to locations in your new content."
+msgstr ""
+"Mapear campos de seu feed fonte para localizações no seu novo conteúdo."
+
+#: includes/class-fp-source-feed-cpt.php:401
+msgid "Source Field (XPath)"
+msgstr "Campo fonte (XPath)"
+
+#: includes/class-fp-source-feed-cpt.php:402
+msgid "New Post Location"
+msgstr "Localização do novo post"
+
+#: includes/class-fp-source-feed-cpt.php:403
+msgid "Mapping Type"
+msgstr "Tipo de mapeamento"
+
+#: includes/class-fp-source-feed-cpt.php:419
+#: includes/class-fp-source-feed-cpt.php:441
+#: includes/class-fp-source-feed-cpt.php:464
+msgid "Post Field"
+msgstr "Campo do post"
+
+#: includes/class-fp-source-feed-cpt.php:420
+#: includes/class-fp-source-feed-cpt.php:442
+#: includes/class-fp-source-feed-cpt.php:465
+msgid "Post Meta"
+msgstr "Meta do post"
+
+#: includes/class-fp-source-feed-cpt.php:421
+#: includes/class-fp-source-feed-cpt.php:443
+#: includes/class-fp-source-feed-cpt.php:466
+msgid "Taxonomy"
+msgstr "Taxonomia"
+
+#: includes/class-fp-source-feed-cpt.php:588
+msgid "Last Pulled On"
+msgstr "Último recolhimento em"
+
+#: includes/class-fp-source-feed-cpt.php:592
+msgid "Date"
+msgstr "Data"
+
+#: includes/class-fp-source-feed-cpt.php:604
+msgid "Last pulled on:"
+msgstr "Último recolhimento em:"
+
+#: includes/class-fp-source-feed-cpt.php:611
+#: includes/class-fp-source-feed-cpt.php:633
+msgid "Never"
+msgstr "Nunca"
