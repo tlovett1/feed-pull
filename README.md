@@ -1,4 +1,4 @@
-Feed Pull [![Dockunit Status](http://dockunit.io/svg/tlovett1/feed-pull/develop)](http://dockunit.io/projects/tlovett1/feed-pull#master)
+Feed Pull [![Dockunit Status](https://dockunit.io/svg/tlovett1/feed-pull?master)](https://dockunit.io/projects/tlovett1/feed-pull#master)
 ==============
 
 This is a simple WordPress plugin that is largely based off of Automattic's Syndication plugin. Easily setup feeds to
