@@ -146,7 +146,7 @@ class FP_Feed_Pull {
 							<th scope="row"><label for="fp_enable_feed_pull"><?php _e( 'Reset deleted syndicated posts:', 'feed-pull' ); ?></label></th>
 							<td>
 								<input class="button" type="button" id="fp_reset_deleted_syndicated_posts" id="fp_reset_deleted_syndicated_posts" value="<?php _e( 'Reset Deleted Posts', 'feed-pull' ); ?>">
-								<img style="vertical-align: middle; opacity: 0; margin-left: .3em;" id="fp-spinner" src="<?php echo home_url( '/wp-includes/images/wpspin.gif' ); ?>">
+								<img style="vertical-align: middle; opacity: 0; margin-left: .3em;" id="fp-spinner" src="<?php echo includes_url( '/images/wpspin.gif' ); ?>">
 								<p><?php _e( "Feed Pull won't resync posts that have been deleted. If you want to resync posts that have been deleted, you can reset that cache.", 'feed-pull' ); ?></p>
 							</td>
 						</tr>

@@ -187,7 +187,7 @@ class FP_Source_Feed_CPT {
 		<p><?php _e( 'Click this button to manually pull from this feed otherwise you will have to wait for the cron job to execute.', 'feed-pull' ); ?></p>
 		<div class="button-container">
 			<input type="button" class="button" value="<?php _e( 'Do Feed Pull', 'feed-pull' ); ?>" id="fp_manual_pull">
-			<img id="fp-spinner" src="<?php echo home_url( '/wp-includes/images/wpspin.gif' ); ?>">
+			<img id="fp-spinner" src="<?php echo includes_url( '/images/wpspin.gif' ); ?>">
 		</div>
 	<?php
 	}
