@@ -418,7 +418,7 @@ class FP_Pull {
 								}
 							}
 
-							$meta_value = apply_filters( 'fp_pre_post_meta_value', $pre_filter_meta_value, $field, $post, $source_feed_id );
+							$meta_value = apply_filters( 'fp_pre_post_meta_value', $pre_filter_meta_value, $field, $post, $source_feed_id, $new_post_id );
 						}
 
 						update_post_meta( $new_post_id, $field['destination_field'], $meta_value );
@@ -451,7 +451,7 @@ class FP_Pull {
 						}
 					}
 				}
-				
+
 				do_action( 'fp_handled_post', $new_post_id, $source_feed_id );
 			}
 
