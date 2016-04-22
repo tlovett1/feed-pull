@@ -1,7 +1,8 @@
+#, fuzzy
 msgid ""
 msgstr ""
 "Project-Id-Version: Feed Pull\n"
-"POT-Creation-Date: 2014-07-09 00:12-0500\n"
+"POT-Creation-Date: 2016-04-22 10:08-0400\n"
 "PO-Revision-Date: 2014-07-09 00:12-0500\n"
 "Last-Translator: \n"
 "Language-Team: \n"
@@ -9,8 +10,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 1.6.6\n"
-"X-Poedit-Basepath: ../\n"
+"X-Generator: Poedit 1.8.6\n"
+"X-Poedit-Basepath: ..\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-KeywordsList: _e;__\n"
 "X-Poedit-SearchPath-0: .\n"
@@ -63,86 +64,86 @@ msgid ""
 "posts that have been deleted, you can reset that cache."
 msgstr ""
 
-#: includes/class-fp-pull.php:173
+#: includes/class-fp-pull.php:172
 msgid "Pulling feed"
 msgstr ""
 
-#: includes/class-fp-pull.php:188
+#: includes/class-fp-pull.php:187
 msgid "No xpath to post items"
 msgstr ""
 
-#: includes/class-fp-pull.php:194
+#: includes/class-fp-pull.php:193
 msgid "No feed URL"
 msgstr ""
 
-#: includes/class-fp-pull.php:200
+#: includes/class-fp-pull.php:199
 msgid "No field map"
 msgstr ""
 
-#: includes/class-fp-pull.php:208
+#: includes/class-fp-pull.php:207
 msgid "Could not fetch feed"
 msgstr ""
 
-#: includes/class-fp-pull.php:217
+#: includes/class-fp-pull.php:216
 msgid "Feed could not be parsed"
 msgstr ""
 
-#: includes/class-fp-pull.php:227
+#: includes/class-fp-pull.php:226
 msgid "No items in feed"
 msgstr ""
 
-#: includes/class-fp-pull.php:259 includes/class-fp-pull.php:389
-#: includes/class-fp-pull.php:417
+#: includes/class-fp-pull.php:261 includes/class-fp-pull.php:393
+#: includes/class-fp-pull.php:421
 #, php-format
 msgid "Xpath to source field returns nothing for %s"
 msgstr ""
 
-#: includes/class-fp-pull.php:285
+#: includes/class-fp-pull.php:287
 msgid "Missing required fields to create/update post"
 msgstr ""
 
-#: includes/class-fp-pull.php:297
+#: includes/class-fp-pull.php:301
 #, php-format
 msgid "Attempting to update post with guid %s"
 msgstr ""
 
-#: includes/class-fp-pull.php:301
+#: includes/class-fp-pull.php:305
 msgid "Post already exists and updates are not allowed."
 msgstr ""
 
-#: includes/class-fp-pull.php:310
+#: includes/class-fp-pull.php:314
 msgid "A post with this GUID has already been syndicated and deleted."
 msgstr ""
 
-#: includes/class-fp-pull.php:314
+#: includes/class-fp-pull.php:318
 #, php-format
 msgid "Attempting to create post with guid %s"
 msgstr ""
 
-#: includes/class-fp-pull.php:349
+#: includes/class-fp-pull.php:353
 #, php-format
 msgid "Could not update post: %s"
 msgstr ""
 
-#: includes/class-fp-pull.php:351
+#: includes/class-fp-pull.php:355
 #, php-format
 msgid "Could not create post: %s"
 msgstr ""
 
-#: includes/class-fp-pull.php:356
+#: includes/class-fp-pull.php:360
 msgid "Updated post"
 msgstr ""
 
-#: includes/class-fp-pull.php:359
+#: includes/class-fp-pull.php:363
 msgid "Created new post"
 msgstr ""
 
-#: includes/class-fp-pull.php:432
+#: includes/class-fp-pull.php:435
 #, php-format
 msgid "Could not set terms: %s"
 msgstr ""
 
-#: includes/class-fp-pull.php:462
+#: includes/class-fp-pull.php:467
 msgid "Could not read contents of feed path"
 msgstr ""
 
