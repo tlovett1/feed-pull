@@ -3,8 +3,8 @@
  * Plugin Name: Feed Pull
  * Plugin URI: http://www.taylorlovett.com
  * Description: Automatically turn feed content into posts.
- * Author: Taylor Lovett
- * Version: 0.2.5
+ * Author: Taylor Lovett, 10up
+ * Version: 0.2.6
  * Author URI: http://www.taylorlovett.com
  */
 

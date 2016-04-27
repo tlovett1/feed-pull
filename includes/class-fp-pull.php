@@ -84,7 +84,7 @@ class FP_Pull {
 	 * @since 0.1.0
 	 * @return bool|int
 	 */
-	private function lookup_post_by_guid( $guid ) {
+	public static function lookup_post_by_guid( $guid ) {
 		global $wpdb;
 
 		$sanitized_guid = sanitize_text_field( $guid );
@@ -225,6 +225,9 @@ class FP_Pull {
 			if ( empty( $posts ) ) {
 				$this->log( __( 'No items in feed', 'feed-pull' ), $source_feed_id, 'warning' );
 				$this->handle_feed_log( $source_feed_id );
+
+				do_action( 'fp_no_feed_items', $source_feed_id );
+
 				continue;
 			}
 
@@ -287,8 +290,10 @@ class FP_Pull {
 
 				$update = false;
 
+				do_action( 'fp_handle_post', $new_post_args['guid'], $source_feed_id );
+
 				// Check if post exists by guid
-				$existing_post_id = $this->lookup_post_by_guid( $new_post_args['guid'] );
+				$existing_post_id = FP_Pull::lookup_post_by_guid( $new_post_args['guid'] );
 
 				if ( ! empty( $existing_post_id ) ) {
 					if ( $allow_updates ) {
@@ -386,40 +391,37 @@ class FP_Pull {
 
 						if ( empty( $values ) ) {
 							$this->log( sprintf( __( 'Xpath to source field returns nothing for %s', 'feed-pull' ), sanitize_text_field( $field['source_field'] ) ), $source_feed_id, 'warning', $new_post_id );
-						} else {
-							if ( count( $values ) > 1 ) {
-								$pre_filter_meta_value = array();
+							continue;
+						}
 
-								foreach ( $values as $value ) {
-									if ( count( $value ) > 1 ) {
-										$arr = array();
+						if ( count( $values ) > 1 ) {
+							$pre_filter_meta_value = array();
 
-										foreach ( $value as $key => $val ) {
-											$arr[$key] = (string) $val;
-										}
-										$pre_filter_meta_value[] = $arr;
-									}
-									else {
-										$pre_filter_meta_value[] = (string) $value;
-									}
-								}
-
-							} else {
-								if ( count( $values[0] ) > 1 ) {
+							foreach ( $values as $value ) {
+								if ( count( $value ) > 1 ) {
 									$arr = array();
 
-									foreach ( $values[0] as $key => $val ) {
-										$arr[$key] = (string) $val;
+									foreach ( $value as $key => $val ) {
+										$arr[ $key ] = (string) $val;
 									}
-									$pre_filter_meta_value = $arr;
-								}
-								else {
-									$pre_filter_meta_value = (string) $values[0];
+									$pre_filter_meta_value[] = $arr;
+								} else {
+									$pre_filter_meta_value[] = (string) $value;
 								}
 							}
+						} else {
+							if ( count( $values[0] ) > 1 ) {
+								$arr = array();
 
-							$meta_value = apply_filters( 'fp_pre_post_meta_value', $pre_filter_meta_value, $field, $post, $source_feed_id );
+								foreach ( $values[0] as $key => $val ) {
+									$arr[ $key ] = (string) $val;
+								}
+								$pre_filter_meta_value = $arr;
+							} else {
+								$pre_filter_meta_value = (string) $values[0];
+							}
 						}
+						$meta_value = apply_filters( 'fp_pre_post_meta_value', $pre_filter_meta_value, $field, $post, $source_feed_id );
 
 						update_post_meta( $new_post_id, $field['destination_field'], $meta_value );
 					}
@@ -451,7 +453,7 @@ class FP_Pull {
 						}
 					}
 				}
-				
+
 				do_action( 'fp_handled_post', $new_post_id, $source_feed_id );
 			}
 
