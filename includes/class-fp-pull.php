@@ -319,7 +319,7 @@ class FP_Pull {
 				}
 
 				// Some post fields need special attention
-				if ( apply_filters( 'fp_format_post_dates', true, $new_post_args, $post, $source_feed_id ) ) {
+				if ( apply_filters( 'fp_format_post_dates', true, $new_post_args, $meta_fields, $taxonomy_fields, $post, $source_feed_id ) ) {
 					if ( ! empty( $new_post_args['post_date'] ) ) {
 						$new_post_args['post_date'] = date( 'Y-m-d H:i:s', strtotime( $new_post_args['post_date'] ) );
 					}
@@ -340,7 +340,7 @@ class FP_Pull {
 					}
 				}
 
-				if ( apply_filters( 'fp_skip_post', false, $new_post_args, $post, $source_feed_id ) ) {
+				if ( apply_filters( 'fp_skip_post', false, $new_post_args, $meta_fields, $taxonomy_fields, $post, $source_feed_id ) ) {
 					continue;
 				}
 
