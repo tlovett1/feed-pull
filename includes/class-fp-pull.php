@@ -340,6 +340,10 @@ class FP_Pull {
 					}
 				}
 
+				if ( apply_filters( 'fp_skip_post', false, $new_post_args, $post, $source_feed_id ) ) {
+					continue;
+				}
+
 				$post_args = apply_filters( 'fp_post_args', $new_post_args, $post, $source_feed_id );
 
 				if ( $update ) {
