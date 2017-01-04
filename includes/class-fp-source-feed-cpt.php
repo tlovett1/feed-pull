@@ -338,12 +338,13 @@ class FP_Source_Feed_CPT {
 			</select>
 		</p>
 
-		<?php $cats = get_categories( array( 'hide_empty' => 0 ) ); ?>
+		<?php $terms = get_terms( apply_filters( 'fp_post_taxonomy_name', 'category' ), array( 'hide_empty' => 0 ) ); ?>
 		<p>
-			<label for="fp_new_post_categories"><?php _e( 'Automatically Add New Posts to Categories:', 'feed-pull' ); ?></label>
+			<?php $taxonomy = get_taxonomy( apply_filters( 'fp_post_taxonomy_name', 'category' ) ); ?>
+			<label for="fp_new_post_categories"><?php echo sprintf( __( 'Automatically Add New Posts to %s:', 'feed-pull' ), $taxonomy->label ); ?></label>
 			<select id="fp_new_post_categories" name="fp_new_post_categories[]" multiple="multiple">
-				<?php foreach ( $cats as $cat ) : ?>
-					<option <?php selected( in_array( $cat->term_id, $current_cats ), true ); ?> value="<?php echo (int) $cat->term_id; ?>"><?php echo esc_html( $cat->category_nicename ); ?></option>
+				<?php foreach ( $terms as $term ) : ?>
+					<option <?php selected( in_array( $term->term_id, $current_cats ), true ); ?> value="<?php echo (int) $term->term_id; ?>"><?php echo esc_html( $term->name ); ?></option>
 				<?php endforeach; ?>
 			</select>
 		</p>
