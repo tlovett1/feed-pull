@@ -368,7 +368,7 @@ class FP_Pull {
 					if ( ! empty( $post_categories ) ) {
 						$sanitized_post_categories = array_map( 'absint', $post_categories );
 
-						wp_set_object_terms( $new_post_id, apply_filters( 'fp_post_categories', $sanitized_post_categories ), 'category', $update );
+						wp_set_object_terms( $new_post_id, apply_filters( 'fp_post_categories', $sanitized_post_categories ), apply_filters( 'fp_post_taxonomy_name', 'category' ), $update );
 					}
 
 					// Mark the post as syndicated
