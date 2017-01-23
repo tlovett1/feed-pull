@@ -65,7 +65,7 @@ class FP_Source_Feed_CPT {
 		if ( ( 'fp_feed' == get_post_type() || ( isset( $_GET['post_type'] ) && 'fp_feed' == $_GET['post_type'] ) ) &&
 			( 'post.php' == $pagenow || 'post-new.php' == $pagenow ) ) {
 
-			if ( defined( WP_DEBUG ) && WP_DEBUG ) {
+			if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 				$js_path = '/js/post-admin.js';
 				$css_path = '/css/post-admin.css';
 			} else {
