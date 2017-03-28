@@ -394,17 +394,34 @@ class FP_Pull {
 							$this->log( sprintf( __( 'Xpath to source field returns nothing for %s', 'feed-pull' ), sanitize_text_field( $field['source_field'] ) ), $source_feed_id, 'warning', $new_post_id );
 							continue;
 						}
-					
+
 						if ( count( $values ) > 1 ) {
 							$pre_filter_meta_value = array();
 
 							foreach ( $values as $value ) {
-								$pre_filter_meta_value[] = (string) $value;
+								if ( count( $value ) > 1 ) {
+									$arr = array();
+
+									foreach ( $value as $key => $val ) {
+										$arr[ $key ] = (string) $val;
+									}
+									$pre_filter_meta_value[] = $arr;
+								} else {
+									$pre_filter_meta_value[] = (string) $value;
+								}
 							}
 						} else {
-							$pre_filter_meta_value = (string) $values[0];
-						}
+							if ( count( $values[0] ) > 1 ) {
+								$arr = array();
 
+								foreach ( $values[0] as $key => $val ) {
+									$arr[ $key ] = (string) $val;
+								}
+								$pre_filter_meta_value = $arr;
+							} else {
+								$pre_filter_meta_value = (string) $values[0];
+							}
+						}
 						$meta_value = apply_filters( 'fp_pre_post_meta_value', $pre_filter_meta_value, $field, $post, $source_feed_id );
 
 						update_post_meta( $new_post_id, $field['destination_field'], $meta_value );
@@ -437,7 +454,7 @@ class FP_Pull {
 						}
 					}
 				}
-				
+
 				do_action( 'fp_handled_post', $new_post_id, $source_feed_id );
 			}
 
