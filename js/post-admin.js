@@ -32,8 +32,8 @@
             var $manualPullSpinner = $( '#fp-spinner' );
             var $feedURLField = $( '#fp_feed_url' );
 
-            var mappingRowTemplate = $( '#mapping-row-template' ).html();
-            var namespaceRowTemplate = $( '#namespace-row-template' ).html();
+            var mappingRowTemplate = _.template( $( '#mapping-row-template' ).html(), templateOptions );
+            var namespaceRowTemplate = _.template( $( '#namespace-row-template' ).html(), templateOptions );
             var logItemTemplate = $( '#log-item-template' ).html();
             var feedURLValue = null;
 
@@ -62,17 +62,17 @@
 
             function handleFieldAddNew( event ) {
                 var nextMappingRowID = parseInt( getLastMappingRowID() ) + 1;
-                var newRow = _.template( mappingRowTemplate, { rowID : nextMappingRowID }, templateOptions );
+                var newRow = mappingRowTemplate( { rowID : nextMappingRowID } );
                 $mappingTableBody.append( newRow );
             }
 
             function handleNamespaceAddNew( event ) {
                 var nextNamespaceRowID = parseInt( getLastNamespaceRowID() ) + 1;
-                var newRow = _.template( namespaceRowTemplate, {
+                var newRow = namespaceRowTemplate( {
                     rowID : nextNamespaceRowID,
                     'namespace_prefix' : '',
                     'namespace_url' : ''
-                }, templateOptions );
+                } );
                 $namespaceTableBody.append( newRow );
 
                 $namespaceTable.show();
@@ -122,11 +122,11 @@
 
                             if ( add_namespace ) {
                                 var nextNamespaceRowID = parseInt( getLastNamespaceRowID() ) + 1;
-                                var newRow = _.template( namespaceRowTemplate, {
+                                var newRow = namespaceRowTemplate( {
                                     'rowID' : nextNamespaceRowID,
                                     'namespace_prefix' : 'default',
                                     'namespace_url' : data.namespaces['']
-                                }, templateOptions );
+                                } );
 
                                 $namespaceTableBody.append( newRow );
 
