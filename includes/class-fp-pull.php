@@ -201,7 +201,8 @@ class FP_Pull {
 				continue;
 			}
 
-			$raw_feed_contents = fp_fetch_feed( $feed_url );
+
+			$raw_feed_contents = fp_fetch_feed( $feed_url, $source_feed_id );
 
 			if ( is_wp_error( $raw_feed_contents ) ) {
 				$this->log( __( 'Could not fetch feed', 'feed-pull' ), $source_feed_id, 'error' );
@@ -454,10 +455,11 @@ class FP_Pull {
  * Get contents of feed file
  *
  * @param $url_or_path
+ * @param $source_feed_id
  * @since 0.1.5
  * @return array|string|WP_Error
  */
-function fp_fetch_feed( $url_or_path ) {
+function fp_fetch_feed( $url_or_path, $source_feed_id ) {
 	if ( ! preg_match( '#^https?://#i', $url_or_path ) ) {
 		// if we have an absolute path, we can just use fopen. This is really only for unit testing
 
@@ -479,6 +481,14 @@ function fp_fetch_feed( $url_or_path ) {
 
 	} else {
 		$request = wp_remote_get( $url_or_path );
+
+		$response_code = wp_remote_retrieve_response_code( $request );
+
+		if ( 200 === $response_code ) {
+			do_action( 'fp_feed_up', $source_feed_id );
+		} else {
+			do_action( 'fp_feed_down', $source_feed_id );
+		}
 
 		if ( is_wp_error( $request ) ) {
 			return $request;
