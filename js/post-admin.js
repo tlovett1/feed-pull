@@ -103,7 +103,8 @@
                     'data' : {
                         'action' : 'get_namespaces',
                         'nonce' : FP_Settings.get_namespaces_nonce,
-                        'feed_url' : $feedURLField.val()
+                        'feed_url' : $feedURLField.val(),
+                        'feed_id' : $postIDField.val()
                     }
                 } ).done( function( data, textStatus, jqXHR ) {
 
